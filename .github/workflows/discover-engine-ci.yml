@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "invention-service/**"
+      - "daisy-app/**"
       - ".github/workflows/discover-engine-ci.yml"
   pull_request:
     paths:
@@ -26,7 +27,14 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install --package-lock-only
+          npm ci
+      - name: Upload generated service lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: discover-engine-service-lockfile
+          path: invention-service/package-lock.json
       - name: Audit dependency vulnerabilities
         shell: bash
         run: |
@@ -116,3 +124,27 @@ jobs:
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/export" -o /tmp/discover-engine-export.zip
           unzip -t /tmp/discover-engine-export.zip
           echo "LIVE PIPELINE PASSED: project=$PROJECT_ID"
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: daisy-app
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Resolve and install pinned frontend dependencies
+        run: |
+          npm install --package-lock-only
+          npm ci
+      - name: Upload generated frontend lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: discover-engine-frontend-lockfile
+          path: daisy-app/package-lock.json
+      - name: Build Daisy frontend
+        run: npm run build
