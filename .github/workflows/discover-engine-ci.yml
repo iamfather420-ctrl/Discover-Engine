@@ -31,3 +31,62 @@ jobs:
         run: npm test
       - name: Type-check service
         run: npx tsc --noEmit
+      - name: Run live seven-stage invention pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          export PORT=4173
+          npm start > /tmp/discover-engine.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:$PORT/ >/tmp/health.json; then
+              break
+            fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+              cat /tmp/discover-engine.log
+              exit 1
+            fi
+            sleep 2
+          done
+          jq -e '.status == "ok"' /tmp/health.json
+
+          curl --fail --silent --show-error \
+            -H 'Content-Type: application/json' \
+            -d '{"query":"solid state battery","domains":["machine learning","bio-inspired"]}' \
+            http://127.0.0.1:$PORT/projects > /tmp/project-start.json
+          PROJECT_ID=$(jq -r '.id' /tmp/project-start.json)
+          test -n "$PROJECT_ID" && test "$PROJECT_ID" != "null"
+          echo "Started project: $PROJECT_ID"
+
+          READY=0
+          for attempt in $(seq 1 180); do
+            curl --fail --silent --show-error \
+              "http://127.0.0.1:$PORT/projects/$PROJECT_ID" > /tmp/project.json
+            STATUS=$(jq -r '.status' /tmp/project.json)
+            echo "Pipeline status ($attempt): $STATUS"
+            if [ "$STATUS" = "ready" ]; then READY=1; break; fi
+            if [ "$STATUS" = "failed" ]; then
+              cat /tmp/project.json
+              cat /tmp/discover-engine.log
+              exit 1
+            fi
+            sleep 2
+          done
+          if [ "$READY" -ne 1 ]; then
+            echo "Pipeline timed out"
+            cat /tmp/project.json
+            cat /tmp/discover-engine.log
+            exit 1
+          fi
+
+          curl --fail --silent --show-error \
+            "http://127.0.0.1:$PORT/projects/$PROJECT_ID/evaluation" > /tmp/evaluation.json
+          jq -e '.rows | length > 0' /tmp/evaluation.json
+          jq -e '.weights.feasibility == 0.3 and .weights.impact == 0.4 and .weights.evidence == 0.3' /tmp/evaluation.json
+
+          curl --fail --silent --show-error \
+            "http://127.0.0.1:$PORT/projects/$PROJECT_ID/export" -o /tmp/discover-engine-export.zip
+          unzip -t /tmp/discover-engine-export.zip
+          echo "LIVE PIPELINE PASSED: project=$PROJECT_ID"
