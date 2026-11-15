@@ -1,0 +1,43 @@
+import { useState } from 'react';
+import type { Project } from '@agatenft/daisy-engine.invention-service';
+import { api } from './api.js';
+import s from './ui.module.css';
+
+/** Stage 7 — download the integration package. */
+export function ExportStage({ project }: { project: Project }) {
+  const [selected, setSelected] = useState<string[]>(project.inventions.map((i) => i.id));
+  const toggle = (id: string) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
+
+  return (
+    <div className={s.grid2} style={{ alignItems: 'start' }}>
+      <div className={s.card}>
+        <h2 className={s.h2}>Choose designs to package</h2>
+        <div className={s.stack} style={{ gap: '0.5rem' }}>
+          {project.inventions.map((inv) => (
+            <label key={inv.id} className={s.row} style={{ minHeight: 44, cursor: 'pointer' }}>
+              <input type="checkbox" checked={selected.includes(inv.id)} onChange={() => toggle(inv.id)} style={{ width: 20, height: 20 }} />
+              <span>{inv.title}</span>
+            </label>
+          ))}
+        </div>
+        <div className={s.row} style={{ marginTop: '1rem' }}>
+          <a className={s.primary} href={selected.length ? api.exportUrl(project.id, selected) : undefined} aria-disabled={!selected.length}
+            style={!selected.length ? { opacity: 0.5, pointerEvents: 'none' } : undefined}>
+            ⬇ Download package (.zip)
+          </a>
+        </div>
+      </div>
+      <div className={s.card}>
+        <h2 className={s.h2}>What's inside</h2>
+        <ul className={s.list}>
+          <li><b>README.md</b> — overview, ranking and integration snippet</li>
+          <li><b>EVALUATION.md</b> — scorecard and literature benchmarks</li>
+          <li><b>inventions/&lt;name&gt;/DESIGN.md</b> — spec, mechanism, risks, experiment results, evidence</li>
+          <li><b>inventions/&lt;name&gt;/prototype.ts</b> — runnable parametric prototype model</li>
+          <li><b>inventions/&lt;name&gt;/invention.json</b> — machine-readable design</li>
+          <li><b>data/</b> — raw discoveries, components and connections</li>
+        </ul>
+      </div>
+    </div>
+  );
+}
