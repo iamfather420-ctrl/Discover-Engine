@@ -1,0 +1,25 @@
+{
+  "name": "daisy-invention-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Daisy invention engine: discover, understand, connect, invent, experiment, evaluate, export.",
+  "main": "index.ts",
+  "scripts": {
+    "start": "tsx main.ts",
+    "dev": "tsx watch main.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "jszip": "^3.10.1",
+    "mongoose": "^8.9.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

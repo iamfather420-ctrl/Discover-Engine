@@ -1,0 +1,83 @@
+import { useMemo } from 'react';
+import type { Project } from '../invention-service/types.js';
+import s from './ui.module.css';
+
+const KIND_COLOR: Record<string, string> = {
+  algorithm: '#8ab4ff',
+  material: '#f59e66',
+  device: '#6ee7b7',
+  method: '#c4a5ff',
+  concept: '#f5c542',
+};
+const TYPE_COLOR: Record<string, string> = { unexplored: '#6ee7b7', emerging: '#f5c542', established: '#4b5263' };
+
+/** Stage 3 — the connection network and ranked list of combinations. */
+export function ConnectStage({ project }: { project: Project }) {
+  const nodes = useMemo(() => {
+    const ids = new Set(project.connections.flatMap((c) => [c.aId, c.bId]));
+    const comps = project.components.filter((c) => ids.has(c.id));
+    const W = 760;
+    const H = 460;
+    return comps.map((c, i) => {
+      const angle = (i / comps.length) * Math.PI * 2 - Math.PI / 2;
+      const r = i % 2 === 0 ? 180 : 140;
+      return { ...c, x: W / 2 + Math.cos(angle) * r * 1.45, y: H / 2 + Math.sin(angle) * r };
+    });
+  }, [project]);
+  const pos = new Map(nodes.map((n) => [n.id, n]));
+
+  return (
+    <div className={s.stack}>
+      <div className={s.card} style={{ padding: '0.75rem' }}>
+        <svg viewBox="0 0 760 460" className={s.network} role="img" aria-label="Technology connection network">
+          {project.connections.map((c) => {
+            const a = pos.get(c.aId);
+            const b = pos.get(c.bId);
+            if (!a || !b) return null;
+            return (
+              <line key={c.id} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={TYPE_COLOR[c.type]} strokeOpacity={0.25 + c.score * 0.6}
+                strokeWidth={1 + c.score * 2.5} strokeDasharray={c.type === 'unexplored' ? '5 4' : undefined} />
+            );
+          })}
+          {nodes.map((n) => (
+            <g key={n.id}>
+              <circle cx={n.x} cy={n.y} r={6 + Math.min(8, n.mentions)} fill={KIND_COLOR[n.kind]} fillOpacity={0.9} stroke="#0b0d12" strokeWidth={2} />
+              <text x={n.x} y={n.y - 14 - Math.min(8, n.mentions)} textAnchor="middle" fontSize="11" fill="#c3c8d4">
+                {n.name.length > 26 ? `${n.name.slice(0, 26)}…` : n.name}
+              </text>
+            </g>
+          ))}
+        </svg>
+        <div className={s.row} style={{ marginTop: '0.6rem', padding: '0 0.4rem' }}>
+          <span className={`${s.chip} ${s.t_unexplored}`}>- - unexplored</span>
+          <span className={`${s.chip} ${s.t_emerging}`}>— emerging</span>
+          <span className={`${s.chip} ${s.t_established}`}>— established</span>
+        </div>
+      </div>
+
+      <div className={s.card}>
+        <h2 className={s.h2}>Ranked connections</h2>
+        <div className={s.tableWrap}>
+          <table className={s.table}>
+            <thead>
+              <tr><th>Combination</th><th>Type</th><th>Score</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              {project.connections.map((c) => (
+                <tr key={c.id}>
+                  <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
+                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type}</span></td>
+                  <td style={{ minWidth: 90 }}>
+                    <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
+                    <span className={s.muted}>{c.score.toFixed(2)}</span>
+                  </td>
+                  <td className={s.muted}>{c.rationale}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

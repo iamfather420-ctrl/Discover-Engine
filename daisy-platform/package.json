@@ -1,0 +1,10 @@
+{
+  "name": "daisy-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Runs the Daisy invention service and workbench UI together.",
+  "scripts": {
+    "start": "node start.mjs"
+  }
+}

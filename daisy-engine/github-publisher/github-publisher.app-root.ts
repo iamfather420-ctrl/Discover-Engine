@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { GithubPublisher } from './github-publisher.js';
 
 /** Files and folders from the workspace that make up the repository. */
-const ENTRIES = ['daisy-engine', 'workspace.jsonc', '.bitmap', 'package.json', 'tsconfig.json', '.oxlintrc.json', '.prettierrc.cjs', 'README.md', '.gitignore'];
+const ENTRIES = ['invention-service', 'daisy-app', 'daisy-platform', 'daisy-engine', 'workspace.jsonc', '.bitmap', 'package.json', 'tsconfig.json', '.oxlintrc.json', '.prettierrc.cjs', 'README.md', '.gitignore'];
 
 function workspaceRoot(): string {
   const candidates = [process.env.WORKSPACE_ROOT, process.cwd(), '/home/user/invention-engine'].filter(Boolean) as string[];
