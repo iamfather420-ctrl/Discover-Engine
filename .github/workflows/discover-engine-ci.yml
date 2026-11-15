@@ -40,6 +40,10 @@ jobs:
             const counts = report.metadata?.vulnerabilities ?? {};
             console.log("Dependency audit:", JSON.stringify(counts));
             for (const [name, count] of Object.entries(counts)) console.log(`${name}: ${count}`);
+            for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+              const via = (item.via ?? []).map(entry => typeof entry === "string" ? entry : entry.name);
+              console.log("PACKAGE", JSON.stringify({name, severity:item.severity, direct:item.isDirect, range:item.range, fixAvailable:item.fixAvailable, via}));
+            }
             console.log("Audit command exit:", process.env.AUDIT_EXIT);
           '
       - name: Upload dependency audit report
