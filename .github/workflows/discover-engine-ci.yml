@@ -34,13 +34,13 @@ jobs:
           npm audit --json > /tmp/npm-audit.json
           AUDIT_EXIT=$?
           set -e
-          node --input-type=module -e '
+          AUDIT_EXIT="$AUDIT_EXIT" node --input-type=module -e '
             import fs from "node:fs";
             const report = JSON.parse(fs.readFileSync("/tmp/npm-audit.json", "utf8"));
             const counts = report.metadata?.vulnerabilities ?? {};
             console.log("Dependency audit:", JSON.stringify(counts));
             for (const [name, count] of Object.entries(counts)) console.log(`${name}: ${count}`);
-            console.log("Audit command exit:", ${AUDIT_EXIT});
+            console.log("Audit command exit:", process.env.AUDIT_EXIT);
           '
       - name: Upload dependency audit report
         if: always()
