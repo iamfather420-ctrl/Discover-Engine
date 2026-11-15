@@ -10,8 +10,12 @@ on:
   pull_request:
     paths:
       - "invention-service/**"
+      - "daisy-app/**"
       - ".github/workflows/discover-engine-ci.yml"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   test:
@@ -148,3 +152,31 @@ jobs:
           path: daisy-app/package-lock.json
       - name: Build Daisy frontend
         run: npm run build
+
+  commit-lockfiles:
+    runs-on: ubuntu-latest
+    needs: [test, frontend]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Download service lockfile
+        uses: actions/download-artifact@v4
+        with:
+          name: discover-engine-service-lockfile
+          path: invention-service
+      - name: Download frontend lockfile
+        uses: actions/download-artifact@v4
+        with:
+          name: discover-engine-frontend-lockfile
+          path: daisy-app
+      - name: Commit generated lockfiles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add invention-service/package-lock.json daisy-app/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Lockfiles already current; no commit needed."
+          else
+            git commit -m "chore: commit reproducible dependency lockfiles"
+            git push
+          fi
