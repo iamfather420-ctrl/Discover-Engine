@@ -2,11 +2,11 @@ import type { Evaluation, EvaluationRow, Project } from './types.js';
 import { clamp } from './text-utils.js';
 
 /** Weights for the overall score. Risk is subtracted. */
-export const WEIGHTS = { novelty: 0.25, feasibility: 0.25, impact: 0.3, evidence: 0.2, risk: 0.15 };
+export const WEIGHTS = { feasibility: 0.3, impact: 0.4, evidence: 0.3, risk: 0.15 };
 
 /**
  * Run the Evaluate stage: score every invention against the current best practice baseline
- * on novelty, feasibility, impact, evidence and risk (0–10), using experiment results when present.
+ * on feasibility, impact, evidence and risk (0–10), using experiment results when present.
  * Also lists the quantitative benchmarks extracted from the literature.
  * @param project - project with inventions
  */
@@ -15,7 +15,6 @@ export function evaluate(project: Project): Evaluation {
     id: 'baseline',
     title: `Current best practice (${project.query})`,
     isBaseline: true,
-    novelty: 0,
     feasibility: 10,
     impact: 0,
     evidence: 10,
@@ -26,7 +25,6 @@ export function evaluate(project: Project): Evaluation {
 
   const rows = project.inventions.map((inv): EvaluationRow => {
     const last = inv.experiments[inv.experiments.length - 1];
-    const novelty = inv.connectionType === 'unexplored' ? 9 : inv.connectionType === 'emerging' ? 6.5 : 3.5;
     const feasibility = clamp(10 - inv.complexity * 1.4 - (1 - inv.maturity) * 2.5, 1, 10);
     const gain = last ? last.meanImprovement : inv.expectedGain;
     const impact = clamp(gain / 3, 0, 10);
@@ -36,7 +34,6 @@ export function evaluate(project: Project): Evaluation {
       id: inv.id,
       title: inv.title,
       isBaseline: false,
-      novelty: round(novelty + (inv.crossDomain ? 1 : 0)),
       feasibility: round(feasibility),
       impact: round(impact),
       evidence: round(evidence),
@@ -44,7 +41,6 @@ export function evaluate(project: Project): Evaluation {
       overall: 0,
       experimentVerdict: last?.verdict,
     };
-    row.novelty = Math.min(10, row.novelty);
     row.overall = score(row);
     return row;
   });
@@ -57,9 +53,9 @@ export function evaluate(project: Project): Evaluation {
   return { rows: [baseline, ...rows.sort((a, b) => b.overall - a.overall)], benchmarks, weights: WEIGHTS };
 }
 
-function score(r: Pick<EvaluationRow, 'novelty' | 'feasibility' | 'impact' | 'evidence' | 'risk'>): number {
+function score(r: Pick<EvaluationRow, 'feasibility' | 'impact' | 'evidence' | 'risk'>): number {
   return round(
-    r.novelty * WEIGHTS.novelty + r.feasibility * WEIGHTS.feasibility + r.impact * WEIGHTS.impact + r.evidence * WEIGHTS.evidence - r.risk * WEIGHTS.risk,
+    r.feasibility * WEIGHTS.feasibility + r.impact * WEIGHTS.impact + r.evidence * WEIGHTS.evidence - r.risk * WEIGHTS.risk,
   );
 }
 

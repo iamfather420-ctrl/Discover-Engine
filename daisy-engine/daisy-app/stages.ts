@@ -8,7 +8,7 @@ export const STAGES: { key: StageKey; label: string; blurb: string }[] = [
   { key: 'connect', label: 'Connect', blurb: 'Find cross-domain pairs rarely studied together.' },
   { key: 'invent', label: 'Invent', blurb: 'Generate engineering designs with hypotheses.' },
   { key: 'experiment', label: 'Experiment', blurb: 'Monte Carlo prototypes against the baseline.' },
-  { key: 'evaluate', label: 'Evaluate', blurb: 'Score novelty, feasibility, impact and risk.' },
+  { key: 'evaluate', label: 'Evaluate', blurb: 'Score feasibility, impact, evidence and risk.' },
   { key: 'export', label: 'Export', blurb: 'Design specs, prototype code and data as a package.' },
 ];
 

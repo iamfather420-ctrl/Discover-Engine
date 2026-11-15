@@ -7,7 +7,7 @@ A standalone engine that gives Daisy the ability to:
 3. **Connect** — rank component pairs by novelty (rarely studied together), domain distance and shared-neighbour compatibility.
 4. **Invent** — turn the best connections into engineering designs with hypothesis, mechanism, risks and evidence.
 5. **Experiment** — Monte Carlo prototypes of each design against the current baseline (gain ± uncertainty, integration loss, failure chance, baseline noise).
-6. **Evaluate** — scorecard on novelty, feasibility, impact, evidence and risk vs. best practice, plus benchmarks extracted from the literature.
+6. **Evaluate** — scorecard on feasibility, impact, evidence and risk vs. best practice, plus benchmarks extracted from the literature.
 7. **Export** — zip package with design specs, runnable `prototype.ts` models, evaluation report and raw research data.
 
 ## Structure

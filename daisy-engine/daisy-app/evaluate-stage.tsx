@@ -3,7 +3,7 @@ import type { Evaluation, Project } from '@agatenft/daisy-engine.invention-servi
 import { api } from './api.js';
 import s from './ui.module.css';
 
-const COLS = ['novelty', 'feasibility', 'impact', 'evidence', 'risk'] as const;
+const COLS = ['feasibility', 'impact', 'evidence', 'risk'] as const;
 
 /** Stage 6 — compare designs against the current best practice and literature benchmarks. */
 export function EvaluateStage({ project }: { project: Project }) {

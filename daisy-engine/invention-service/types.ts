@@ -126,7 +126,6 @@ export interface EvaluationRow {
   id: string;
   title: string;
   isBaseline: boolean;
-  novelty: number;
   feasibility: number;
   impact: number;
   evidence: number;
