@@ -18,7 +18,7 @@ export function run() {
   app.use(express.json());
 
   app.get('/', (_req, res) => {
-    res.json({ name: 'github-publisher', tokenConfigured: Boolean(process.env.GITHUB_TOKEN), root: workspaceRoot() });
+    res.json({ name: 'github-publisher', tokenConfigured: Boolean(process.env.HOPE_ANYTHING_AI_TOKEN), root: workspaceRoot() });
   });
 
   app.get('/preview', async (_req, res) => {
@@ -28,8 +28,8 @@ export function run() {
 
   app.post('/publish', async (req, res) => {
     try {
-      const token = process.env.GITHUB_TOKEN;
-      if (!token) throw new Error('GITHUB_TOKEN is not set');
+      const token = process.env.HOPE_ANYTHING_AI_TOKEN;
+      if (!token) throw new Error('HOPE_ANYTHING_AI_TOKEN is not set');
       const { owner, repo, message, branch } = req.body || {};
       if (!owner || !repo) throw new Error('owner and repo are required');
       const files = await publisher.collect(workspaceRoot(), ENTRIES);
