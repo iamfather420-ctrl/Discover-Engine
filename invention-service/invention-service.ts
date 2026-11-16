@@ -4,7 +4,6 @@ import { DEFAULT_LENSES, discover } from './discover.js';
 import { understand } from './understand.js';
 import { connect } from './connect.js';
 import { invent, inventCustom } from './invent.js';
-import { runExperiment } from './experiment.js';
 import { evaluate } from './evaluate.js';
 import { buildExportPackage, designSpec } from './export-package.js';
 import { ProjectRepository } from './project-repository.js';
