@@ -121,7 +121,7 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
         (r) => `| ${r.title} | ${r.feasibility ?? 'not established'} | ${r.impact ?? 'not established'} | ${r.evidence ?? 'not established'} | ${r.risk ?? 'not established'} | **${r.overall ?? 'not established'}** | ${r.evidenceStatus} |`,
       ),
       '',
-      '## Literature leads — extracted claims are unverified',
+      '## Claim-level evidence provenance — exact abstract quotes, not verified findings',\n      ...((project.evidenceClaims || []).map((c) => `- [${c.sourceTitle}](${c.sourceUrl}) sentence ${c.locator.sentenceIndex + 1}: ${c.text} — ${c.reviewStatus}; ${c.evidenceGrade}; semantic support and independent corroboration not established`)),\n      '',\n      '## Literature leads — extracted claims are unverified',
       ...evaluation.benchmarks.map((b) => `- "${b.claim}" — [${b.source}](${b.url})`),
       '',
     ].join('\n'),
@@ -136,7 +136,7 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
   }
 
   const data = root.folder('data')!;
-  data.file('discoveries.json', JSON.stringify(project.discoveries, null, 2));
+  data.file('discoveries.json', JSON.stringify(project.discoveries, null, 2));\n  data.file('evidence-claims.json', JSON.stringify(project.evidenceClaims || [], null, 2));
   data.file('components.json', JSON.stringify(project.components, null, 2));
   data.file('connections.json', JSON.stringify(project.connections, null, 2));
 
