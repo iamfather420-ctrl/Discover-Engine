@@ -54,7 +54,7 @@ function buildInvention(
   const evidence = parts.reduce((s, p) => s + p.mentions, 0);
   const maturity = clamp(evidence / (parts.length * 6), 0.1, 1);
 
-  const base = conn.type === 'unexplored' ? 22 : conn.type === 'emerging' ? 14 : 7;
+  const base = conn.type === 'not_observed_in_sample' ? 22 : conn.type === 'limited_sample_overlap' ? 14 : 7;
   const expectedGain = Math.round((base * (0.7 + (seed % 60) / 100) + (conn.crossDomain ? 4 : 0)) * 10) / 10;
   const uncertainty = Math.round((expectedGain * (1.15 - maturity * 0.75)) * 10) / 10;
   const complexity = clamp(Math.round(parts.length + (conn.crossDomain ? 1 : 0) + (1 - maturity) * 1.5), 1, 5);
@@ -160,7 +160,7 @@ export function inventCustom(query: string, parts: TechComponent[], connections:
   const ids = new Set(parts.map((p) => p.id));
   const shared = parts.every((p, i) => i === 0 || p.sourceIds.some((s) => parts[0].sourceIds.includes(s)));
   const known = connections.find((c) => ids.has(c.aId) && ids.has(c.bId));
-  const conn = known || { type: shared ? 'emerging' : 'unexplored', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
+  const conn = known || { type: shared ? 'limited_sample_overlap' : 'not_observed_in_sample', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
   const inv = buildInvention(query, parts, conn as Connection, inferTarget(query, discoveries), true);
   inv.title = `Custom: ${titleCase(inv.title)}`;
   return inv;
