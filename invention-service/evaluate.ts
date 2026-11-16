@@ -27,8 +27,8 @@ export function evaluate(project: Project): Evaluation {
     evidenceStatus: 'hypothesis_only',
   }));
   const benchmarks = project.discoveries
-    .filter((d) => d.lens === 'core')
-    .flatMap((d) => d.metrics.map((claim) => ({ claim, source: d.title, url: d.url })))
+    .filter((d) => d.lens === 'core' && d.sourceVerification === 'verified_metadata')
+    .flatMap((d) => d.metrics.map((claim) => ({ claim: `UNVERIFIED ABSTRACT EXTRACT: ${claim}`, source: d.title, url: d.url })))
     .slice(0, 12);
   return { rows: [baseline, ...rows], benchmarks, weights: WEIGHTS };
 }
