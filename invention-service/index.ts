@@ -9,7 +9,10 @@ export { extractEvidenceClaims, validateClaimPassage } from './claim-evidence.js
 export { evaluate, WEIGHTS } from './evaluate.js';
 export { buildExportPackage, designSpec } from './export-package.js';
 export type {
-  EvidenceClaim,\n  ClaimKind,\n  ClaimReviewStatus,\n  Discovery,
+  EvidenceClaim,
+  ClaimKind,
+  ClaimReviewStatus,
+  Discovery,
   DiscoverySource,
   TechComponent,
   ComponentKind,
