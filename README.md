@@ -4,7 +4,7 @@ A standalone engine that gives Daisy the ability to:
 
 1. **Discover** — live search across OpenAlex (250M+ scholarly works) and arXiv preprints, for a core query plus adjacent "lens" domains.
 2. **Understand** — break sources into reusable technical components (algorithms, materials, devices, methods, concepts) that recur across independent papers.
-3. **Connect** — rank component pairs by novelty (rarely studied together), domain distance and shared-neighbour compatibility.
+3. **Connect** — rank component-pair sample associations using retrieved-source co-occurrence, domain labels and shared-neighbour heuristics. These scores do not establish novelty, compatibility or effectiveness.
 4. **Invent** — turn the best connections into engineering designs with hypothesis, mechanism, risks and evidence.
 5. **Experiment** — real measured validation only. Synthetic Monte Carlo output is disabled and cannot establish experimental truth.
 6. **Evaluate** — evidence-status report. Numeric rankings remain unavailable until measured results and a measured baseline exist; abstract extracts are unverified leads.
