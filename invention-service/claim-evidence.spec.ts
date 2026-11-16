@@ -19,7 +19,7 @@ describe('claim-level evidence provenance', () => {
       quantitativeTokens: ['12%', '25 °c'], reviewStatus: 'human_review_required',
       evidenceGrade: 'metadata_verified_abstract_only',
     });
-    expect(claims.every((claim) => claim.reviewStatus !== 'verified')).toBe(true);
+    expect(claims.every((claim) => claim.reviewStatus === 'human_review_required')).toBe(true);
   });
 
   it('rejects an exact-quote mismatch', () => {
