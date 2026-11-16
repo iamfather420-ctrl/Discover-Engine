@@ -1,51 +1,27 @@
-# Daisy Invention Engine: test results
+# Discover Engine evidence and validation status
 
-Run in the Bit workspace against the live OpenAlex and arXiv APIs. Evaluation scoring has no novelty criterion.
+**Status:** This document supersedes earlier scorecards and Monte Carlo test reports. Earlier numeric design scores, expected gains, confidence-like values, and simulation verdicts are legacy synthetic outputs and are not evidence of real-world performance. They must not be cited as validated results.
 
-## Checks
+## Current evidence rules
 
-| Check | Result |
-|---|---|
-| Unit tests (`invention-service.spec.ts`) | 2 of 2 passed |
-| Type check (`bit check-types`) | No errors |
-| Live pipeline run through the gateway | Completed, status `ready` |
-| Evaluation endpoint | Returned scorecard, benchmarks and weights |
-| Export endpoint | HTTP 200, 52,261-byte zip |
+- A source is eligible for downstream extraction only after its canonical provider identifier, title, publication year (when available), and abstract text match the provider's canonical record.
+- A metadata match establishes record consistency only. It does not prove that the paper's scientific claims are correct.
+- Extracted components retain an exact source-record pointer for the displayed abstract sentence.
+- Connection scores describe co-occurrence and metadata patterns in the retrieved sample only. They do not establish novelty, compatibility, or effectiveness.
+- Generated inventions are hypotheses. Expected performance gain, uncertainty, evidence maturity, and numeric evaluation scores are not established.
+- Synthetic Monte Carlo experiments are disabled. The legacy experiment endpoint returns HTTP 410.
+- Exports identify abstract-derived metrics as unverified literature leads and do not include synthetic performance models.
 
-## Live run: "solid state battery"
+## Current automated checks
 
-Adjacent lenses: machine learning, bio-inspired.
+The GitHub Actions workflow is being expanded to test both the standalone service and the Bit production workspace. Only checks that pass on the exact current commit should be reported as current validation.
 
-| Stage | Output |
-|---|---|
-| Discover | 36 sources across 3 lenses |
-| Understand | 28 technical components |
-| Connect | 24 candidate connections |
-| Invent | 6 engineering designs |
-| Experiment | 2,000-trial simulation per design |
-| Evaluate | Scorecard against current best practice |
-| Export | Zip package |
+## What remains unproven
 
-## Evaluation scorecard
+- Whether individual statements in source abstracts are scientifically correct.
+- Whether each extracted metric is interpreted with the right denominator, baseline, unit, conditions, and context.
+- Whether a proposed component combination works in practice.
+- Whether an invention improves on a properly measured baseline.
+- Independent replication by another operator or laboratory.
 
-Scores are out of 10. The baseline is the current best practice.
-
-| Design | Feasibility | Impact | Evidence | Risk | Overall | Experiment |
-|---|---|---|---|---|---|---|
-| Baseline: current best practice | 10 | 0 | 10 | 1 | 5.9 | n/a |
-| Hybrid Machine Learning × Solid Electrolyte Interphase Framework | 5.6 | 7.3 | 9.2 | 0.9 | 7.2 | supported |
-| Hybrid Machine Learning × Lithium ion Stack | 4.4 | 5.6 | 9.8 | 0.8 | 6.4 | supported |
-| Programmable Lithium ion × Solid-state Lithium Batteries Architecture | 3.6 | 8.1 | 7.2 | 1.7 | 6.2 | inconclusive |
-| Hierarchical Dendrite Suppression × Solid-state Lithium Batteries Framework | 3.2 | 7.7 | 5.8 | 2.3 | 5.4 | inconclusive |
-| Coupled Battery Materials × Ion Transport Framework | 3.2 | 6.4 | 5.8 | 2.4 | 4.9 | inconclusive |
-| Graded Electrochemical Stability Window × Battery Materials Module | 3.2 | 4.6 | 5.7 | 2.7 | 4.1 | inconclusive |
-
-Weights: feasibility 0.30, impact 0.40, evidence 0.30, risk 0.15 (risk is subtracted).
-
-The last three designs score below the baseline, so the engine does not rank every new idea above current practice.
-
-## Caveats
-
-- These results come from the Bit workspace build. The plain `invention-service/`, `daisy-app/` and `daisy-platform/` copies could not be installed here, so they have not been run. They carry the same scoring change.
-- The experiment stage is a seeded Monte Carlo simulation. Its verdicts are hypotheses to test in the lab, not lab results.
-- The Connect stage still ranks component pairs by how rarely they appear together. That is how it finds candidates. It no longer affects the evaluation score.
+Until those steps are completed with traceable full-text evidence and measured data, results must remain explicitly unverified or hypothesis-only.
