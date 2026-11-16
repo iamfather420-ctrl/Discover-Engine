@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Evaluation, ExperimentParams, ExperimentResult, Invention, Project } from './types.js';
 import { DEFAULT_LENSES, discover } from './discover.js';
+import { verifySourceMetadataBatch } from './source-verification.js';
 import { understand } from './understand.js';
 import { connect } from './connect.js';
 import { invent, inventCustom } from './invent.js';
@@ -27,7 +28,11 @@ export class InventionService {
   const log=(message:string)=>project.log.push(`${new Date().toISOString().slice(11,19)} ${message}`);
   log(`Discover: searching OpenAlex + arXiv for "${project.query}" and ${project.domains.length} adjacent domains`);
   await this.repo.save(project);
-  project.discoveries=await discover(project.query,project.domains,log);
+  const found=await discover(project.query,project.domains,log);
+  project.discoveries=await verifySourceMetadataBatch(found);
+  const verified=project.discoveries.filter(d=>d.sourceVerification==='verified_metadata').length;
+  const mismatched=project.discoveries.filter(d=>d.sourceVerification==='metadata_mismatch').length;
+  log(`Bibliographic metadata: ${verified} matched, ${mismatched} mismatched, ${project.discoveries.length-verified-mismatched} unverified. Abstract claims are still unverified.`);
   if(!project.discoveries.length) throw new Error('No sources found — try a broader query.');
   project.stage='understand';await this.repo.save(project);
   project.components=understand(project.discoveries,project.query);
