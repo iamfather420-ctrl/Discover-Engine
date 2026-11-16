@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Evaluation, ExperimentParams, ExperimentResult, Invention, Project } from './types.js';
 import { DEFAULT_LENSES, discover } from './discover.js';
-import { verifySourceMetadataBatch } from './source-verification.js';
+import { verifySourceMetadataBatch } from './source-verification.js';\nimport { extractEvidenceClaims } from './claim-evidence.js';\nimport { createMeasurementRecord } from './measurement-evidence.js';
 import { understand } from './understand.js';
 import { connect } from './connect.js';
 import { invent, inventCustom } from './invent.js';
@@ -16,7 +16,7 @@ export class InventionService {
  remove(id:string){return this.repo.remove(id);}
  async start(query:string,domains?:string[]):Promise<Project>{
   const input=normalizeProjectInput(query,domains), now=new Date().toISOString();
-  const project:Project={id:randomUUID(),query:input.query,domains:(input.domains?.length?input.domains:DEFAULT_LENSES).slice(0,5),status:'running',stage:'discover',log:[],discoveries:[],components:[],connections:[],inventions:[],createdAt:now,updatedAt:now};
+  const project:Project={id:randomUUID(),query:input.query,domains:(input.domains?.length?input.domains:DEFAULT_LENSES).slice(0,5),status:'running',stage:'discover',log:[],discoveries:[],evidenceClaims:[],evidenceMeasurements:[],components:[],connections:[],inventions:[],createdAt:now,updatedAt:now};
   await this.repo.save(project);
   this.runPipeline(project).catch(async error=>{
    project.status='error';project.error=error instanceof Error?error.message:String(error);project.log.push(`Error: ${project.error}`);
@@ -29,7 +29,7 @@ export class InventionService {
   log(`Discover: searching OpenAlex + arXiv for "${project.query}" and ${project.domains.length} adjacent domains`);
   await this.repo.save(project);
   const found=await discover(project.query,project.domains,log);
-  project.discoveries=await verifySourceMetadataBatch(found);
+  project.discoveries=await verifySourceMetadataBatch(found);\n  project.evidenceClaims=extractEvidenceClaims(project.discoveries);\n  log(`Claim provenance: recorded ${project.evidenceClaims.length} exact abstract-sentence leads; none are scientifically verified.`);
   const verified=project.discoveries.filter(d=>d.sourceVerification==='verified_metadata').length;
   const mismatched=project.discoveries.filter(d=>d.sourceVerification==='metadata_mismatch').length;
   log(`Bibliographic metadata: ${verified} matched, ${mismatched} mismatched, ${project.discoveries.length-verified-mismatched} unverified. Abstract claims are still unverified.`);
@@ -48,7 +48,7 @@ export class InventionService {
   log('Experiment: no experiment is claimed; designs remain hypotheses pending measured validation');
   project.stage='ready';project.status='ready';log('Ready: evaluate and export');await this.repo.save(project);
  }
- async inventFrom(projectId:string,componentIds:string[]):Promise<Invention>{
+ async ingestMeasurement(projectId:string,input:unknown){\n  const project=await this.require(projectId);\n  const record=createMeasurementRecord(input);\n  project.evidenceMeasurements=[...(project.evidenceMeasurements||[]),record];\n  project.log.push(`Measurement ingested: ${record.id}; status measured_unverified. No verification is implied.`);\n  await this.repo.save(project);\n  return record;\n }\n async inventFrom(projectId:string,componentIds:string[]):Promise<Invention>{
   if(!Array.isArray(componentIds)||componentIds.length<2||componentIds.length>4||componentIds.some(id=>typeof id!=='string'||!id.trim())||new Set(componentIds).size!==componentIds.length) throw new Error('Select 2–4 unique component IDs');
   const project=await this.require(projectId),parts=project.components.filter(c=>componentIds.includes(c.id));
   if(parts.length!==componentIds.length) throw new Error('One or more selected components were not found');
