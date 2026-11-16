@@ -1,4 +1,4 @@
-import type { Evaluation, ExperimentResult, Invention, Project } from '@agatenft/daisy-engine.invention-service';
+import type { Evaluation, Invention, Project } from '@agatenft/daisy-engine.invention-service';
 
 /** Base URL of the invention service (through the platform gateway). */
 export const API_BASE = `${process.env.BACKEND_URL || ''}/invention-service`;
@@ -29,11 +29,6 @@ export const api = {
   deleteProject: (id: string) => request<void>(`/projects/${id}`, { method: 'DELETE' }),
   inventFrom: (id: string, componentIds: string[]) =>
     request<Invention>(`/projects/${id}/inventions`, { method: 'POST', body: JSON.stringify({ componentIds }) }),
-  runExperiment: (id: string, inv: string, trials: number, baselineNoise: number) =>
-    request<ExperimentResult>(`/projects/${id}/inventions/${inv}/experiments`, {
-      method: 'POST',
-      body: JSON.stringify({ trials, baselineNoise }),
-    }),
   evaluate: (id: string) => request<Evaluation>(`/projects/${id}/evaluation`),
   specUrl: (id: string, inv: string) => `${API_BASE}/projects/${id}/inventions/${inv}/spec`,
   exportUrl: (id: string, inventionIds?: string[]) =>
