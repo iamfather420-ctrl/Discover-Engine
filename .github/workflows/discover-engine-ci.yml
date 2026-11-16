@@ -128,7 +128,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"trials":500,"baselineNoise":3}' \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/inventions/$(jq -r '.inventions[0].id' /tmp/project.json)/experiments" > /tmp/simulation-status.txt
-          test "$(cat /tmp/simulation-status.txt)" = "400"
+          test "$(cat /tmp/simulation-status.txt)" = "410"
           jq -e '.message | contains("Simulation disabled")' /tmp/simulation-response.json
 
           curl --fail --silent --show-error \
