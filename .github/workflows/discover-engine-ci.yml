@@ -126,7 +126,7 @@ jobs:
           fi
 
           jq -e '.evidenceClaims | type == "array"' /tmp/project.json
-          jq -e '[.evidenceClaims[] | select(.reviewStatus == "human_review_required" or .reviewStatus == "insufficient_evidence" or .reviewStatus == "conflicting")] | length == (.evidenceClaims | length)' /tmp/project.json
+          jq -e '(.evidenceClaims // []) as $claims | [$claims[] | select(.reviewStatus == "human_review_required" or .reviewStatus == "insufficient_evidence" or .reviewStatus == "conflicting")] | length == ($claims | length)' /tmp/project.json
 
           curl --fail --silent --show-error \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/evaluation" > /tmp/evaluation.json
