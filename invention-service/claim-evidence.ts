@@ -23,7 +23,7 @@ export interface EvidenceClaim {
   evidenceGrade: 'metadata_verified_abstract_only';
   limitations: string[];
 }
-const NUMBER_UNIT = /\b\d+(?:[.,]\d+)?\s?(?:%|percent|x|×|-fold|fold|times|mg|g|kg|ml|l|mah\/g|wh\/kg|w\/kg|mw|kw|gw|ms|µs|us|ns|hz|khz|mhz|ghz|db|nm|µm|mm|ev|mev|°c|kpa|mpa|gpa|tops|flops|fps)\b/gi;
+const NUMBER_UNIT = /\b\d+(?:[.,]\d+)?\s?(?:%|percent|x|×|-fold|fold|times|mg|g|kg|ml|l|mah\/g|wh\/kg|w\/kg|mw|kw|gw|ms|µs|us|ns|hz|khz|mhz|ghz|db|nm|µm|mm|ev|mev|°c|kpa|mpa|gpa|tops|flops|fps)(?=$|[^a-z0-9])/gi;
 function numericTokens(text: string): string[] {
   return (text.match(NUMBER_UNIT) || []).map((token) => token.toLowerCase().replace(/\s+/g, ' ').trim()).sort();
 }
