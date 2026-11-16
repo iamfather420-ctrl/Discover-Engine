@@ -139,7 +139,8 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
   }
 
   const data = root.folder('data')!;
-  data.file('discoveries.json', JSON.stringify(project.discoveries, null, 2));\n  data.file('evidence-claims.json', JSON.stringify(project.evidenceClaims || [], null, 2));
+  data.file('discoveries.json', JSON.stringify(project.discoveries, null, 2));
+  data.file('evidence-claims.json', JSON.stringify(project.evidenceClaims || [], null, 2));
   data.file('components.json', JSON.stringify(project.components, null, 2));
   data.file('connections.json', JSON.stringify(project.connections, null, 2));
 
