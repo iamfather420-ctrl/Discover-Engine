@@ -8,7 +8,7 @@ function slug(s: string): string {
 /** Markdown design specification for one invention. */
 export function designSpec(project: Project, inv: Invention): string {
   const sources = project.discoveries.filter((d) => inv.sourceIds.includes(d.id));
-  const last = inv.experiments[inv.experiments.length - 1];
+
   return [
     `# ${inv.title}`,
     '',
@@ -31,22 +31,13 @@ export function designSpec(project: Project, inv: Invention): string {
     '## Risks',
     ...inv.risks.map((r) => `- ${r}`),
     '',
-    '## Estimates',
-    `| Expected gain | Uncertainty | Complexity | Evidence maturity |`,
-    `|---|---|---|---|`,
-    `| ${inv.expectedGain}% | ±${inv.uncertainty}% | ${inv.complexity}/5 | ${Math.round(inv.maturity * 100)}% |`,
+    '## Evidence status',
+    '**Hypothesis only — no measured performance result is available.** Source links are research leads, not proof that this design works.',
     '',
-    '## Experiment results',
-    last
-      ? [
-          `Verdict: **${last.verdict}** (${last.params.trials} trials, baseline noise ±${last.params.baselineNoise}%)`,
-          '',
-          `- Mean improvement: ${last.meanImprovement}% (σ ${last.stdDev})`,
-          `- 90% interval: ${last.p5}% … ${last.p95}%`,
-          `- P(beats baseline): ${Math.round(last.probBetter * 100)}%`,
-          `- P(hits ≥80% of target): ${Math.round(last.probHitsTarget * 100)}%`,
-        ].join('\n')
-      : '_Not yet tested. Run an experiment in Daisy before relying on these estimates._',
+    '- Expected gain: not established',
+    '- Uncertainty: not established',
+    `- Complexity descriptor: ${inv.complexity}/5 (design heuristic, not measured performance)`,
+    '- Experimental validation: pending independent, controlled measurement.',
     '',
     '## Evidence',
     ...sources.map((s) => `- [${s.title}](${s.url}) — ${s.field}, ${s.year ?? 'n.d.'}`),
@@ -57,59 +48,26 @@ export function designSpec(project: Project, inv: Invention): string {
 /** Runnable TypeScript prototype model of the invention. */
 function prototypeModule(inv: Invention): string {
   return `/**
- * Prototype model: ${inv.title}
+ * Design scaffold only: ${inv.title}
  * Components: ${inv.componentNames.join(', ')}
  *
- * A parametric model of the expected improvement. Replace the constants with
- * measured values as real prototypes are built.
+ * This file intentionally contains no synthetic performance model.
+ * Implement and validate a physical/software prototype, define a baseline,
+ * collect raw measurements, and document the protocol before calculating results.
  */
-export interface PrototypeConfig {
-  /** Expected % gain over baseline. */
-  expectedGain: number;
-  /** Std-dev of the gain (%). */
-  uncertainty: number;
-  /** 1–5 integration complexity. */
-  complexity: number;
-  /** 0–1 evidence maturity. */
-  maturity: number;
-}
-
-export const config: PrototypeConfig = {
-  expectedGain: ${inv.expectedGain},
-  uncertainty: ${inv.uncertainty},
-  complexity: ${inv.complexity},
-  maturity: ${inv.maturity},
-};
-
-function normal(): number {
-  const u = Math.max(Math.random(), 1e-12);
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random());
-}
-
-/** Simulate one prototype build. Returns % improvement over baseline. */
-export function simulateOnce(c: PrototypeConfig = config, baselineNoise = 3): number {
-  const failure = (1 - c.maturity) * 0.12 + (c.complexity - 1) * 0.02;
-  if (Math.random() < failure) return -Math.abs(normal()) * 10 - 5;
-  return c.expectedGain + normal() * c.uncertainty - Math.abs(normal()) * c.complexity * 1.2 - normal() * baselineNoise;
-}
-
-/** Run N trials and summarize. */
-export function simulate(trials = 2000, c: PrototypeConfig = config) {
-  const xs = Array.from({ length: trials }, () => simulateOnce(c)).sort((a, b) => a - b);
-  const mean = xs.reduce((s, x) => s + x, 0) / trials;
-  return {
-    mean,
-    p5: xs[Math.floor(trials * 0.05)],
-    p95: xs[Math.floor(trials * 0.95)],
-    probBetter: xs.filter((x) => x > 0).length / trials,
-  };
-}
+export const design = {
+  title: ${JSON.stringify(inv.title)},
+  components: ${JSON.stringify(inv.componentNames)},
+  complexityDescriptor: ${inv.complexity},
+  measuredPerformance: 'NOT_ESTABLISHED',
+  validationStatus: 'HYPOTHESIS_ONLY',
+} as const;
 `;
 }
 
 /**
  * Build the Export integration package (zip): README, per-invention design specs,
- * runnable prototype models, evaluation report and raw research data.
+ * design scaffolds, evaluation report and raw research data.
  * @param project - the project
  * @param evaluation - Evaluate output
  * @param inventionIds - optional subset to include
@@ -130,19 +88,19 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
       '',
       '## Contents',
       '- `inventions/<name>/DESIGN.md` — design specification, mechanism, risks, evidence',
-      '- `inventions/<name>/prototype.ts` — runnable parametric prototype model',
+      '- `inventions/<name>/prototype.ts` — design scaffold; no simulated performance claims',
       '- `inventions/<name>/invention.json` — machine-readable design',
-      '- `EVALUATION.md` — comparison against the current best practice',
+      '- `EVALUATION.md` — evidence status; no measured comparison is available',
       '- `data/` — raw discoveries, components and connections',
       '',
       '## Integration',
       '```ts',
-      "import { simulate } from './inventions/<name>/prototype';",
-      'console.log(simulate(5000));',
+      "import { design } from './inventions/<name>/prototype';",
+      'console.log(design.validationStatus);',
       '```',
       '',
-      '## Ranking',
-      ...evaluation.rows.map((r, i) => `${i + 1}. ${r.title} — overall ${r.overall}${r.experimentVerdict ? ` (${r.experimentVerdict})` : ''}`),
+      '## Evidence status — numeric ranking disabled until measured evidence exists',
+      ...evaluation.rows.map((r) => `- ${r.title} — ${r.evidenceStatus}; numeric ranking not established`),
       '',
     ].join('\n'),
   );
@@ -152,12 +110,12 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
     [
       '# Evaluation',
       '',
-      `Weights: ${Object.entries(evaluation.weights).map(([k, v]) => `${k} ${v}`).join(', ')} (risk subtracted)`,
+      `Numeric scoring disabled until measured evidence exists.`,
       '',
-      '| Design | Feasibility | Impact | Evidence | Risk | Overall | Experiment |',
+      '| Design | Feasibility | Impact | Evidence | Risk | Overall | Validation |',
       '|---|---|---|---|---|---|---|',
       ...evaluation.rows.map(
-        (r) => `| ${r.title} | ${r.feasibility} | ${r.impact} | ${r.evidence} | ${r.risk} | **${r.overall}** | ${r.experimentVerdict || '—'} |`,
+        (r) => `| ${r.title} | ${r.feasibility ?? 'not established'} | ${r.impact ?? 'not established'} | ${r.evidence ?? 'not established'} | ${r.risk ?? 'not established'} | **${r.overall ?? 'not established'}** | ${r.evidenceStatus} |`,
       ),
       '',
       '## Literature benchmarks',

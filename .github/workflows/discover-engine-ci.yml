@@ -122,7 +122,14 @@ jobs:
           curl --fail --silent --show-error \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/evaluation" > /tmp/evaluation.json
           jq -e '.rows | length > 0' /tmp/evaluation.json
-          jq -e '.weights.feasibility == 0.3 and .weights.impact == 0.4 and .weights.evidence == 0.3' /tmp/evaluation.json
+          jq -e '.weights == {} and ([.rows[] | select(.isBaseline == false) | .evidenceStatus == "hypothesis_only" and .overall == null and .evidence == null] | all)' /tmp/evaluation.json
+
+          curl --silent --output /tmp/simulation-response.json --write-out '%{http_code}' -X POST \
+            -H 'Content-Type: application/json' \
+            -d '{"trials":500,"baselineNoise":3}' \
+            "http://127.0.0.1:$PORT/projects/$PROJECT_ID/inventions/$(jq -r '.inventions[0].id' /tmp/project.json)/experiments" > /tmp/simulation-status.txt
+          test "$(cat /tmp/simulation-status.txt)" = "410"
+          jq -e '.message | contains("Simulation disabled")' /tmp/simulation-response.json
 
           curl --fail --silent --show-error \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/export" -o /tmp/discover-engine-export.zip

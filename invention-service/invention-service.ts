@@ -4,7 +4,6 @@ import { DEFAULT_LENSES, discover } from './discover.js';
 import { understand } from './understand.js';
 import { connect } from './connect.js';
 import { invent, inventCustom } from './invent.js';
-import { runExperiment } from './experiment.js';
 import { evaluate } from './evaluate.js';
 import { buildExportPackage, designSpec } from './export-package.js';
 import { ProjectRepository } from './project-repository.js';
@@ -39,8 +38,7 @@ export class InventionService {
   project.stage='invent';await this.repo.save(project);
   project.inventions=invent(project.query,project.components,project.connections,project.discoveries);
   log(`Invent: generated ${project.inventions.length} engineering designs`);
-  for(const invention of project.inventions) invention.experiments.push(runExperiment(invention,{trials:2000,baselineNoise:3}));
-  log('Experiment: ran a 2,000-trial baseline simulation for every design');
+  log('Experiment: no experiment is claimed; designs remain hypotheses pending measured validation');
   project.stage='ready';project.status='ready';log('Ready: evaluate and export');await this.repo.save(project);
  }
  async inventFrom(projectId:string,componentIds:string[]):Promise<Invention>{
@@ -48,14 +46,11 @@ export class InventionService {
   const project=await this.require(projectId),parts=project.components.filter(c=>componentIds.includes(c.id));
   if(parts.length!==componentIds.length) throw new Error('One or more selected components were not found');
   const invention=inventCustom(project.query,parts,project.connections,project.discoveries);
-  invention.experiments.push(runExperiment(invention,{trials:2000,baselineNoise:3}));
   project.inventions=[invention,...project.inventions.filter(item=>item.id!==invention.id)];await this.repo.save(project);return invention;
  }
  async experiment(projectId:string,inventionId:string,params:ExperimentParams):Promise<ExperimentResult>{
   validateExperimentParams(params);
-  const project=await this.require(projectId),invention=project.inventions.find(item=>item.id===inventionId);
-  if(!invention) throw new Error('Invention not found');
-  const result=runExperiment(invention,params,invention.experiments.length);invention.experiments.push(result);await this.repo.save(project);return result;
+  throw new Error('Simulation is disabled: it cannot produce real experimental evidence. Submit traceable measured data through a validated evidence workflow.');
  }
  async evaluate(projectId:string):Promise<Evaluation>{return evaluate(await this.require(projectId));}
  async spec(projectId:string,inventionId:string):Promise<string>{
