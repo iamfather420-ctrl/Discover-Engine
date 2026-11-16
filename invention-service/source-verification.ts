@@ -7,7 +7,7 @@ function compare(d: Discovery, title: string, year: number | null): string | nul
 export async function verifySourceMetadata(d: Discovery): Promise<Discovery> {
  try {
   if (d.source === 'openalex') {
-   const id = d.providerId?.match(/W\\d+/i)?.[0];
+   const id = d.providerId?.match(/W\d+/i)?.[0];
    if (!id) throw new Error('Missing canonical OpenAlex work identifier');
    const w = await json(`https://api.openalex.org/works/${id}`);
    const mismatch = compare(d, String(w.title || ''), w.publication_year ?? null);
