@@ -52,7 +52,7 @@ describe('authenticated assertion review', () => {
   it('keeps a matching passage withheld', () => {
     const result = reviewAssertion(discovery(), claim());
     expect(result.publishable).toBe(false);
-    expect(result.reviewStatus).toBe('human_review_required');
+    expect(result.reviewStatus).toBe('HUMAN_REVIEW_REQUIRED');
     expect(result.passageValid).toBe(true);
   });
 
@@ -61,7 +61,7 @@ describe('authenticated assertion review', () => {
     mismatched.locator.quote = 'A different sentence.';
     const result = reviewAssertion(discovery(), mismatched);
     expect(result.publishable).toBe(false);
-    expect(result.reviewStatus).toBe('insufficient_evidence');
+    expect(result.reviewStatus).toBe('INSUFFICIENT_EVIDENCE');
   });
 
   it('requires the configured bearer token over HTTP', async () => {
@@ -83,7 +83,8 @@ describe('authenticated assertion review', () => {
       expect(accepted.status).toBe(200);
       const body = await accepted.json() as { publishable: boolean; reviewStatus: string };
       expect(body.publishable).toBe(false);
-      expect(body.reviewStatus).toBe('human_review_required');
+      expect(body.reviewStatus).toBe('HUMAN_REVIEW_REQUIRED');
+      expect(body.reviewStatus).not.toBe('VERIFIED');
     } finally {
       delete process.env.DISCOVERY_API_TOKEN;
       await server.stop();

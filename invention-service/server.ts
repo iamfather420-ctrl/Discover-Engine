@@ -2,6 +2,7 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { InventionService } from './invention-service.js';
 import { ProjectRepository, connectDb } from './project-repository.js';
+import { randomUUID } from 'node:crypto';
 import { reviewAssertion, bearerMatches } from './assertion-api.js';
 import { normalizeProjectInput } from './validation.js';
 import type { AddressInfo } from 'node:net';
@@ -63,7 +64,9 @@ export async function run() {
   if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
     return res.status(400).json({ error: 'invalid_assertion', publishable: false });
   }
-  res.json(reviewAssertion(discovery, claim));
+  const requestId = /^[A-Za-z0-9._:-]{8,80}$/.test(req.header('x-request-id') ?? '') ? String(req.header('x-request-id')) : randomUUID();
+  res.setHeader('x-request-id', requestId);
+  res.json({ ...reviewAssertion(discovery, claim), request_id: requestId });
  });
  const server=app.listen(port);
  await new Promise<void>((resolve, reject) => {
