@@ -62,11 +62,7 @@ function buildInvention(
     id: shortId(title + query + (custom ? 'c' : '')),
     title,
     summary: `A ${query} design that combines ${roles}. ${
-      conn.type === 'unexplored'
-        ? 'These components have not been studied together in the surveyed literature.'
-        : conn.type === 'emerging'
-          ? 'This pairing appears in only a handful of early studies.'
-          : 'This builds on a proven pairing and pushes it further.'
+      'This is a proposed combination assembled from literature-derived components; the combined design has not been validated.'
     }`,
     hypothesis: `Integrating ${names.join(' with ')} may affect the ${target}. Direction and magnitude of any effect are unknown and require controlled measurement.`,
     targetMetric: target,
