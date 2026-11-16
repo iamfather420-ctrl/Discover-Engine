@@ -20,6 +20,16 @@ describe('traceable measurement evidence ingestion', () => {
     expect(validateMeasurementInput({ ...input, observations: [] })).toMatchObject({ valid: false });
     expect(validateMeasurementInput({ ...input, protocol: undefined })).toMatchObject({ valid: false });
   });
+  it('counts distinct replicate IDs rather than raw observation rows and rejects incomparable data', () => {
+    const repeated = { ...input, observations: [
+      input.observations[0],
+      { ...input.observations[0], value: 12, observedAt: '2026-01-01T12:05:00Z' },
+    ], sampleSize: 1 };
+    expect(validateMeasurementInput(repeated).valid).toBe(true);
+    const undercounted = { ...repeated, observations: [...repeated.observations, { ...input.observations[0], replicate: 'r2', observedAt: '2026-01-01T12:10:00Z' }] };
+    expect(validateMeasurementInput(undercounted)).toMatchObject({ valid: false, reason: expect.stringContaining('distinct replicate IDs') });
+    expect(validateMeasurementInput({ ...input, observations: [{ ...input.observations[0], unit: 'V' }] })).toMatchObject({ valid: false, reason: expect.stringContaining('units must match') });
+  });
   it('creates only measured_unverified records and has no automatic verified promotion', () => {
     const record = createMeasurementRecord(input, '2026-01-02T00:00:00.000Z');
     expect(record.status).toBe('measured_unverified');
