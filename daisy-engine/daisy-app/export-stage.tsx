@@ -30,8 +30,8 @@ export function ExportStage({ project }: { project: Project }) {
       <div className={s.card}>
         <h2 className={s.h2}>What's inside</h2>
         <ul className={s.list}>
-          <li><b>README.md</b> — overview, ranking and integration snippet</li>
-          <li><b>EVALUATION.md</b> — scorecard and literature benchmarks</li>
+          <li><b>README.md</b> — overview, evidence status and integration snippet</li>
+          <li><b>EVALUATION.md</b> — evidence status and unverified literature leads; no unsupported numeric scorecard</li>
           <li><b>inventions/&lt;name&gt;/DESIGN.md</b> — spec, mechanism, risks, experiment results, evidence</li>
           <li><b>inventions/&lt;name&gt;/prototype.ts</b> — runnable parametric prototype model</li>
           <li><b>inventions/&lt;name&gt;/invention.json</b> — machine-readable design</li>
