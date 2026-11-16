@@ -5,7 +5,7 @@ describe('project input validation', () => {
  it('rejects invalid query values and lengths', () => { for (const q of [undefined,null,42,'','  ','ab','x'.repeat(501)]) expect(() => normalizeProjectInput(q)).toThrow(); });
  it('rejects invalid domain payloads', () => {
   expect(() => normalizeProjectInput('battery','energy')).toThrow(/array/);
-  expect(() => normalizeProjectInput('battery',['a',4])).toThrow(/strings/);
+  expect(() => normalizeProjectInput('battery',['a',4])).toThrow(/string/);
   expect(() => normalizeProjectInput('battery',['a','b','c','d','e','f'])).toThrow(/maximum of 5/);
   expect(() => normalizeProjectInput('battery',[''])).toThrow(/between 1 and 80/);
   expect(() => normalizeProjectInput('battery',['x'.repeat(81)])).toThrow(/between 1 and 80/);
