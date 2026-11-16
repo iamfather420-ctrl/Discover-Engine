@@ -143,6 +143,8 @@ export interface Project {
   discoveries: Discovery[];
   /** Exact abstract-sentence provenance records; never automatically truth-verified. */
   evidenceClaims?: EvidenceClaim[];
+  /** Raw measurement submissions; ingestion never implies independent verification. */
+  evidenceMeasurements?: import('./measurement-evidence.js').MeasurementRecord[];
   components: TechComponent[];
   connections: Connection[];
   inventions: Invention[];

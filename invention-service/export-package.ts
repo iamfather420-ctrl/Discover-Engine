@@ -121,6 +121,11 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
         (r) => `| ${r.title} | ${r.feasibility ?? 'not established'} | ${r.impact ?? 'not established'} | ${r.evidence ?? 'not established'} | ${r.risk ?? 'not established'} | **${r.overall ?? 'not established'}** | ${r.evidenceStatus} |`,
       ),
       '',
+      '## Measurement evidence — ingestion is not verification',
+      ...((project.evidenceMeasurements || []).map((m) => `- ${m.title} — ${m.status}; protocol ${m.protocol.id} v${m.protocol.version}; n=${m.sampleSize}; dataset SHA-256 ${m.dataset.sha256}; analysis SHA-256 ${m.analysis.codeSha256}`)),
+      '',
+      'No measurement record is promoted to independently verified. Operator-supplied metadata and remote hashes are recorded but not independently authenticated or re-computed by this service.',
+      '',
       '## Claim-level evidence provenance — exact abstract quotes, not verified findings',
       ...((project.evidenceClaims || []).map((c) => `- [${c.sourceTitle}](${c.sourceUrl}) sentence ${c.locator.sentenceIndex + 1}: ${c.text} — ${c.reviewStatus}; ${c.evidenceGrade}; semantic support and independent corroboration not established`)),
       '',
@@ -141,6 +146,7 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
   const data = root.folder('data')!;
   data.file('discoveries.json', JSON.stringify(project.discoveries, null, 2));
   data.file('evidence-claims.json', JSON.stringify(project.evidenceClaims || [], null, 2));
+  data.file('measurement-evidence.json', JSON.stringify(project.evidenceMeasurements || [], null, 2));
   data.file('components.json', JSON.stringify(project.components, null, 2));
   data.file('connections.json', JSON.stringify(project.connections, null, 2));
 
