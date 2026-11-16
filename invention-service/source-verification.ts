@@ -13,7 +13,7 @@ export async function verifySourceMetadata(d: Discovery): Promise<Discovery> {
    if (mismatch) return { ...d, sourceVerification: 'metadata_mismatch', sourceVerificationDetail: mismatch };
    return { ...d, url: w.doi || w.id || d.url, sourceVerification: 'verified_metadata', sourceVerificationDetail: w.doi ? 'OpenAlex canonical record matched; DOI supplied' : 'OpenAlex canonical record title and year matched' };
   }
-  const id = d.url.match(/arxiv\.org\/(?:abs|pdf)\/(\d{4}\.\d{4,5}(?:v\d+)?)/i)?.[1] || d.id;
+  const id = d.providerId?.match(/(\\d{4}\\.\\d{4,5}(?:v\\d+)?)/)?.[1] || d.url.match(/arxiv\.org\/(?:abs|pdf)\/(\d{4}\.\d{4,5}(?:v\d+)?)/i)?.[1] || d.id;
   if (!/^\d{4}\.\d{4,5}(?:v\d+)?$/.test(id)) throw new Error('Invalid arXiv identifier');
   const body = await xml(`https://export.arxiv.org/api/query?id_list=${encodeURIComponent(id)}`);
   const entry = body.match(/<entry>([\s\S]*?)<\/entry>/i)?.[1]; if (!entry) throw new Error('No canonical arXiv record returned');
