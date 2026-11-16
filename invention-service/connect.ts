@@ -47,11 +47,11 @@ export function connect(components: TechComponent[], discoveries: Discovery[], m
       const sampleSeparation = 1 - jaccard;
       const score = sampleSeparation * 0.4 + distance * 0.25 + bridge * 0.2 + strength * 0.15 + (a.kind !== b.kind ? 0.05 : 0);
 
-      const type: ConnectionType = shared === 0 ? 'unexplored' : jaccard < 0.34 ? 'emerging' : 'established';
+      const type: ConnectionType = shared === 0 ? 'not_observed_in_sample' : jaccard < 0.34 ? 'limited_sample_overlap' : 'higher_sample_overlap';
       const rationale =
-        type === 'unexplored'
+        type === 'not_observed_in_sample'
           ? `Not observed together in this retrieved sample of ${union} sources; ${sharedNeighbours} shared neighbouring concepts are a heuristic association, not proof of compatibility or novelty.`
-          : type === 'emerging'
+          : type === 'limited_sample_overlap'
             ? `Co-occur in ${shared} of ${union} retrieved sources; this sample frequency does not establish how widely studied the pairing is.`
             : `Co-occur in ${shared}/${union} retrieved sources; this is an observed sample relationship, not proof that the pairing is effective.`;
 
