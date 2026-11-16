@@ -66,7 +66,7 @@ export function ConnectStage({ project }: { project: Project }) {
               {project.connections.map((c) => (
                 <tr key={c.id}>
                   <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
-                  <td><span className={`${s.chip} ${(c.type === 'not_observed_in_sample' ? s.t_unexplored : c.type === 'limited_sample_overlap' ? s.t_emerging : s.t_established)}`}>{c.type === 'unexplored' ? 'not observed in sample' : c.type === 'emerging' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
+                  <td><span className={`${s.chip} ${(c.type === 'not_observed_in_sample' ? s.t_unexplored : c.type === 'limited_sample_overlap' ? s.t_emerging : s.t_established)}`}>{c.type === 'not_observed_in_sample' ? 'not observed in sample' : c.type === 'limited_sample_overlap' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
                   <td style={{ minWidth: 90 }}>
                     <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
                     <span className={s.muted}>{c.score.toFixed(2)}</span>
