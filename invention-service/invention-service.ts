@@ -53,7 +53,8 @@ export class InventionService {
   if(!Array.isArray(componentIds)||componentIds.length<2||componentIds.length>4||componentIds.some(id=>typeof id!=='string'||!id.trim())||new Set(componentIds).size!==componentIds.length) throw new Error('Select 2–4 unique component IDs');
   const project=await this.require(projectId),eligible=project.discoveries.filter(d=>d.sourceVerification==='verified_metadata'),eligibleIds=new Set(eligible.map(d=>d.id)),parts=project.components.filter(c=>componentIds.includes(c.id));
   if(parts.length!==componentIds.length) throw new Error('One or more selected components were not found');
-  const invention=inventCustom(project.query,parts,project.connections,project.discoveries);
+  if(parts.some(part=>part.sourceIds.length===0||part.sourceIds.some(id=>!eligibleIds.has(id)))) throw new Error('Selected components lack canonical metadata-verified source provenance');
+  const invention=inventCustom(project.query,parts,project.connections,eligible);
   project.inventions=[invention,...project.inventions.filter(item=>item.id!==invention.id)];await this.repo.save(project);return invention;
  }
  async experiment(projectId:string,inventionId:string,params:ExperimentParams):Promise<ExperimentResult>{
