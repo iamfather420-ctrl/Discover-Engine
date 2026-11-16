@@ -10,6 +10,7 @@ import { evaluate } from './evaluate.js';
 import { buildExportPackage, designSpec } from './export-package.js';
 import { ProjectRepository } from './project-repository.js';
 import { normalizeProjectInput, validateExperimentParams } from './validation.js';
+import { createMeasurementRecord } from './measurement-evidence.js';
 export class InventionService {
  constructor(private repo:ProjectRepository){}
  list(){return this.repo.list();}
@@ -50,6 +51,14 @@ export class InventionService {
   log(`Invent: generated ${project.inventions.length} engineering designs`);
   log('Experiment: no experiment is claimed; designs remain hypotheses pending measured validation');
   project.stage='ready';project.status='ready';log('Pipeline complete: designs remain hypotheses; claim review and measured validation are pending. Workflow readiness is not evidence verification.');await this.repo.save(project);
+ }
+ async ingestMeasurement(projectId:string,input:unknown){
+  const project=await this.require(projectId);
+  const record=createMeasurementRecord(input);
+  project.evidenceMeasurements=[...(project.evidenceMeasurements||[]),record];
+  project.log.push(`Measurement ingested: ${record.id}; status measured_unverified. No verification is implied.`);
+  await this.repo.save(project);
+  return record;
  }
  async inventFrom(projectId:string,componentIds:string[]):Promise<Invention>{
   if(!Array.isArray(componentIds)||componentIds.length<2||componentIds.length>4||componentIds.some(id=>typeof id!=='string'||!id.trim())||new Set(componentIds).size!==componentIds.length) throw new Error('Select 2–4 unique component IDs');
