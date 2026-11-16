@@ -7,8 +7,9 @@ function compare(d: Discovery, title: string, year: number | null): string | nul
 export async function verifySourceMetadata(d: Discovery): Promise<Discovery> {
  try {
   if (d.source === 'openalex') {
-   if (!/^[a-z0-9]+$/i.test(d.id)) throw new Error('Invalid OpenAlex identifier');
-   const w = await json(`https://api.openalex.org/works/https://openalex.org/${d.id}`);
+   const id = d.providerId?.match(/W\\d+/i)?.[0];
+   if (!id) throw new Error('Missing canonical OpenAlex work identifier');
+   const w = await json(`https://api.openalex.org/works/${id}`);
    const mismatch = compare(d, String(w.title || ''), w.publication_year ?? null);
    if (mismatch) return { ...d, sourceVerification: 'metadata_mismatch', sourceVerificationDetail: mismatch };
    return { ...d, url: w.doi || w.id || d.url, sourceVerification: 'verified_metadata', sourceVerificationDetail: w.doi ? 'OpenAlex canonical record matched; DOI supplied' : 'OpenAlex canonical record title and year matched' };
