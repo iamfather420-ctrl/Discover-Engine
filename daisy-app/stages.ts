@@ -7,8 +7,8 @@ export const STAGES: { key: StageKey; label: string; blurb: string }[] = [
   { key: 'understand', label: 'Understand', blurb: 'Break sources into reusable technical components.' },
   { key: 'connect', label: 'Connect', blurb: 'Find cross-domain pairs rarely studied together.' },
   { key: 'invent', label: 'Invent', blurb: 'Generate engineering designs with hypotheses.' },
-  { key: 'experiment', label: 'Experiment', blurb: 'Monte Carlo prototypes against the baseline.' },
-  { key: 'evaluate', label: 'Evaluate', blurb: 'Score feasibility, impact, evidence and risk.' },
+  { key: 'experiment', label: 'Validation', blurb: 'Record traceable measurements; submissions remain unverified pending independent review.' },
+  { key: 'evaluate', label: 'Evaluate', blurb: 'Review evidence status; numeric scores remain unavailable without measured validation.' },
   { key: 'export', label: 'Export', blurb: 'Design specs, prototype code and data as a package.' },
 ];
 

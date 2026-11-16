@@ -15,7 +15,7 @@ export function EvaluateStage({ project }: { project: Project }) {
   }, [project]);
 
   if (error) return <div className={s.error}>{error}</div>;
-  if (!evaluation) return <div className={s.empty}>Scoring designs…</div>;
+  if (!evaluation) return <div className={s.empty}>Loading evidence status…</div>;
 
   return (
     <div className={s.stack}>

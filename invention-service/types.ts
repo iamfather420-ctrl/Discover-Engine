@@ -1,3 +1,22 @@
+/** Claim-level provenance; these records are literature leads, not verified scientific facts. */
+export type ClaimKind = 'descriptive' | 'numeric' | 'causal' | 'comparative' | 'performance';
+export type ClaimReviewStatus = 'human_review_required' | 'insufficient_evidence' | 'conflicting';
+export interface EvidenceClaim {
+  id: string;
+  text: string;
+  kind: ClaimKind;
+  sourceId: string;
+  sourceUrl: string;
+  sourceTitle: string;
+  locator: { kind: 'abstract_sentence'; sentenceIndex: number; quote: string };
+  quantitativeTokens: string[];
+  corroboratingSourceIds: string[];
+  corroborationStatus: 'candidate_only_unassessed';
+  reviewStatus: ClaimReviewStatus;
+  evidenceGrade: 'metadata_verified_abstract_only';
+  limitations: string[];
+}
+
 /** Where a discovery came from. */
 export type DiscoverySource = 'openalex' | 'arxiv';
 
@@ -122,6 +141,10 @@ export interface Project {
   error?: string;
   log: string[];
   discoveries: Discovery[];
+  /** Exact abstract-sentence provenance records; never automatically truth-verified. */
+  evidenceClaims?: EvidenceClaim[];
+  /** Raw measurement submissions; ingestion never implies independent verification. */
+  evidenceMeasurements?: import('./measurement-evidence.js').MeasurementRecord[];
   components: TechComponent[];
   connections: Connection[];
   inventions: Invention[];
