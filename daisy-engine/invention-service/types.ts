@@ -44,7 +44,7 @@ export interface TechComponent {
 }
 
 /** How well-trodden a relationship is in the literature. */
-export type ConnectionType = 'unexplored' | 'emerging' | 'established';
+export type ConnectionType = 'not_observed_in_sample' | 'limited_sample_overlap' | 'higher_sample_overlap';
 
 /** A relationship between two components found in the Connect stage. */
 export interface Connection {
