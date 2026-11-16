@@ -39,6 +39,8 @@ export interface TechComponent {
   mentions: number;
   /** A sentence from a source that shows the component in context. */
   context: string;
+  /** Exact source record whose abstract contains `context`. */
+  contextSourceId?: string;
 }
 
 /** How well-trodden a relationship is in the literature. */
