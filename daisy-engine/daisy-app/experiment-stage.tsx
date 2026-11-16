@@ -4,7 +4,7 @@ import { api } from './api.js';
 import s from './ui.module.css';
 
 /** Stage 5 — measured validation is pending; synthetic experiments are disabled. */
-export function ExperimentStage({ project }: { project: Project; initialId?: string; onChange: () => void }) {
+export function ExperimentStage({ project, onChange }: { project: Project; initialId?: string; onChange: () => void }) {
   const [payload, setPayload] = useState(JSON.stringify({
     title: 'Measured prototype run', hypothesisId: project.inventions[0]?.id || 'replace-with-hypothesis-id',
     protocol: { id: 'protocol-001', version: '1.0', method: 'Describe the controlled measurement procedure' },
@@ -24,7 +24,7 @@ export function ExperimentStage({ project }: { project: Project; initialId?: str
     try {
       const record = await api.ingestMeasurement(project.id, JSON.parse(payload));
       setMessage(`Saved as ${record.status}. This is an unverified submission, not proof.`);
-      setSubmitted(true);
+      setSubmitted(true); onChange();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Submission failed');
     } finally { setBusy(false); }
