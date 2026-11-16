@@ -5,7 +5,7 @@ import type { Connection, ConnectionType, Discovery, TechComponent } from './typ
  * - co-occurrence: how often they already appear together (Jaccard over sources)
  * - bridge strength: shared neighbours, i.e. indirect evidence the pair is compatible
  * - domain distance: whether they come from different fields / research lenses
- * The most valuable pairs are compatible (bridged) yet rarely studied together, across domains.
+ * The score is a heuristic over this retrieved sample only; it does not establish novelty, compatibility, or a literature-wide absence of prior work.
  * @param components - output of the Understand stage
  * @param discoveries - output of the Discover stage (for lens/field lookup)
  * @param max - number of connections to keep
@@ -44,16 +44,16 @@ export function connect(components: TechComponent[], discoveries: Discovery[], m
       const crossDomain = distance >= 0.5 || a.kind !== b.kind;
 
       const strength = Math.min(1, (a.mentions + b.mentions) / 10);
-      const novelty = 1 - jaccard;
-      const score = novelty * 0.4 + distance * 0.25 + bridge * 0.2 + strength * 0.15 + (a.kind !== b.kind ? 0.05 : 0);
+      const sampleSeparation = 1 - jaccard;
+      const score = sampleSeparation * 0.4 + distance * 0.25 + bridge * 0.2 + strength * 0.15 + (a.kind !== b.kind ? 0.05 : 0);
 
       const type: ConnectionType = shared === 0 ? 'unexplored' : jaccard < 0.34 ? 'emerging' : 'established';
       const rationale =
         type === 'unexplored'
-          ? `Never studied together in ${union} sources, but ${sharedNeighbours} shared neighbouring concepts suggest compatibility.`
+          ? `Not observed together in this retrieved sample of ${union} sources; ${sharedNeighbours} shared neighbouring concepts are a heuristic association, not proof of compatibility or novelty.`
           : type === 'emerging'
-            ? `Appear together in only ${shared} of ${union} sources — an early, under-explored combination.`
-            : `Frequently combined (${shared}/${union} sources) — a proven pairing to build on.`;
+            ? `Co-occur in ${shared} of ${union} retrieved sources; this sample frequency does not establish how widely studied the pairing is.`
+            : `Co-occur in ${shared}/${union} retrieved sources; this is an observed sample relationship, not proof that the pairing is effective.`;
 
       out.push({
         id: `${a.id}-${b.id}`,
