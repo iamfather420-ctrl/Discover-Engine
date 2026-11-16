@@ -81,10 +81,12 @@ export function understand(discoveries: Discovery[], query: string, max = 28): T
   const byId = new Map(discoveries.map((d) => [d.id, d]));
   return chosen.map(({ phrase, ids }) => {
     const sources = [...ids].map((id) => byId.get(id)!).filter(Boolean);
-    const context =
-      sources
-        .flatMap((s) => sentences(s.abstract))
-        .find((s) => s.toLowerCase().includes(phrase.split(' ')[0]) && s.length < 320) || '';
+    const contextSource = sources.find((source) =>
+      sentences(source.abstract).some((sentence) => sentence.toLowerCase().includes(phrase.split(' ')[0]) && sentence.length < 320),
+    );
+    const context = contextSource
+      ? sentences(contextSource.abstract).find((sentence) => sentence.toLowerCase().includes(phrase.split(' ')[0]) && sentence.length < 320) || ''
+      : '';
     return {
       id: shortId(phrase),
       name: titleCase(phrase),
@@ -93,6 +95,7 @@ export function understand(discoveries: Discovery[], query: string, max = 28): T
       sourceIds: [...ids],
       mentions: ids.size,
       context,
+      contextSourceId: contextSource?.id,
     };
   });
 }
