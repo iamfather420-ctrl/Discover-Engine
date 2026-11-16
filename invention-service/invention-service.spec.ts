@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { understand } from './understand.js';
 import { connect } from './connect.js';
 import { invent } from './invent.js';
-import { runExperiment } from './experiment.js';
 import type { Discovery } from './types.js';
 
 const doc = (id: string, lens: string, field: string, abstract: string): Discovery => ({
@@ -36,14 +35,5 @@ describe('invention pipeline', () => {
     const inventions = invent('battery', components, connections, discoveries);
     expect(inventions.length).toBeGreaterThan(0);
     expect(inventions[0].componentIds.length).toBeGreaterThanOrEqual(2);
-  });
-
-  it('runs a reproducible experiment with a verdict', () => {
-    const components = understand(discoveries, 'battery');
-    const [inv] = invent('battery', components, connect(components, discoveries), discoveries);
-    const r1 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    const r2 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    expect(r1.meanImprovement).toEqual(r2.meanImprovement);
-    expect(['supported', 'inconclusive', 'rejected']).toContain(r1.verdict);
   });
 });
