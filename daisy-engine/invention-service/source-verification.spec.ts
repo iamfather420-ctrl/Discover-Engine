@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { verifySourceMetadata } from './source-verification.js';
 import type { Discovery } from './types.js';
 
-const abstract = 'Abstract text with an unsupported scientific claim.';
+const abstract = 'Text with an unsupported scientific claim.';
 const source: Discovery = {
   id: 'local-hash', providerId: 'https://openalex.org/W123456789', source: 'openalex',
   title: 'A verified paper title', abstract, year: 2024,
