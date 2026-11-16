@@ -6,9 +6,9 @@ A standalone engine that gives Daisy the ability to:
 2. **Understand** — break sources into reusable technical components (algorithms, materials, devices, methods, concepts) that recur across independent papers.
 3. **Connect** — rank component pairs by novelty (rarely studied together), domain distance and shared-neighbour compatibility.
 4. **Invent** — turn the best connections into engineering designs with hypothesis, mechanism, risks and evidence.
-5. **Experiment** — Monte Carlo prototypes of each design against the current baseline (gain ± uncertainty, integration loss, failure chance, baseline noise).
-6. **Evaluate** — scorecard on feasibility, impact, evidence and risk vs. best practice, plus benchmarks extracted from the literature.
-7. **Export** — zip package with design specs, runnable `prototype.ts` models, evaluation report and raw research data.
+5. **Experiment** — real measured validation only. Synthetic Monte Carlo output is disabled and cannot establish experimental truth.
+6. **Evaluate** — evidence-status report. Numeric rankings remain unavailable until measured results and a measured baseline exist; abstract extracts are unverified leads.
+7. **Export** — zip package with design specs, non-simulating design scaffolds, evidence-status report and raw research data.
 
 ## Structure
 
@@ -37,7 +37,7 @@ bit run daisy-platform
 | POST | `/projects` `{ query, domains[] }` | Start a research run (pipeline runs in the background) |
 | GET | `/projects` / `/projects/:id` | List / poll projects |
 | POST | `/projects/:id/inventions` `{ componentIds[] }` | Invent from hand-picked components |
-| POST | `/projects/:id/inventions/:inv/experiments` `{ trials, baselineNoise }` | Run an experiment |
+| POST | `/projects/:id/inventions/:inv/experiments` | Disabled (HTTP 410); submit traceable measured data through a future validated workflow |
 | GET | `/projects/:id/evaluation` | Scorecard vs. baseline |
 | GET | `/projects/:id/inventions/:inv/spec` | Markdown design spec |
 | GET | `/projects/:id/export?inventions=a,b` | Integration package (.zip) |
@@ -45,10 +45,10 @@ bit run daisy-platform
 ## Use the engine as a library
 
 ```ts
-import { discover, understand, connect, invent, runExperiment } from '@agatenft/daisy-engine.invention-service';
+import { discover, understand, connect, invent } from '@agatenft/daisy-engine.invention-service';
 
 const sources = await discover('solid state battery', ['machine learning', 'bio-inspired'], console.log);
 const components = understand(sources, 'solid state battery');
 const designs = invent('solid state battery', components, connect(components, sources), sources);
-console.log(runExperiment(designs[0], { trials: 5000, baselineNoise: 3 }));
+console.log(designs[0].hypothesis); // hypothesis only; no performance result is implied
 ```
