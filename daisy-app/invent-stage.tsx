@@ -1,5 +1,4 @@
 import type { Project } from '../invention-service/types.js';
-import { api } from './api.js';
 import s from './ui.module.css';
 
 /** Stage 4 — generated engineering designs. */
@@ -8,7 +7,6 @@ export function InventStage({ project, onTest }: { project: Project; onTest: (in
   return (
     <div className={s.stack}>
       {project.inventions.map((inv) => {
-        const last = inv.experiments[inv.experiments.length - 1];
         return (
           <article key={inv.id} className={s.card}>
             <div className={s.between} style={{ alignItems: 'flex-start' }}>
@@ -17,15 +15,15 @@ export function InventStage({ project, onTest }: { project: Project; onTest: (in
                   <span className={`${s.chip} ${s[`t_${inv.connectionType}`]}`}>{inv.connectionType}</span>
                   {inv.crossDomain && <span className={s.chip}>cross-domain</span>}
                   {inv.custom && <span className={`${s.chip} ${s.chipOn}`}>custom</span>}
-                  {last && <span className={`${s.chip} ${s[`v_${last.verdict}`]}`}>experiment: {last.verdict}</span>}
+                  <span className={s.chip}>hypothesis only</span>
                 </div>
                 <h2 className={s.h2}>{inv.title}</h2>
                 <p className={s.muted} style={{ marginTop: 0 }}>{inv.summary}</p>
               </div>
               <div className={s.stats} style={{ flex: '1 1 300px', maxWidth: 420 }}>
-                <div className={s.stat}><span className={s.statValue}>+{inv.expectedGain}%</span><span className={s.statLabel}>Expected gain</span></div>
-                <div className={s.stat}><span className={s.statValue}>±{inv.uncertainty}%</span><span className={s.statLabel}>Uncertainty</span></div>
-                <div className={s.stat}><span className={s.statValue}>{inv.complexity}/5</span><span className={s.statLabel}>Complexity</span></div>
+                <div className={s.stat}><span className={s.statValue}>Not established</span><span className={s.statLabel}>Performance gain</span></div>
+                <div className={s.stat}><span className={s.statValue}>Not measured</span><span className={s.statLabel}>Uncertainty</span></div>
+                <div className={s.stat}><span className={s.statValue}>{inv.complexity}/5</span><span className={s.statLabel}>Design complexity heuristic</span></div>
               </div>
             </div>
 
