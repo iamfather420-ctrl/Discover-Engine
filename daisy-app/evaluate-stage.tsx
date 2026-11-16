@@ -21,9 +21,9 @@ export function EvaluateStage({ project }: { project: Project }) {
     <div className={s.stack}>
       <div className={s.card}>
         <div className={s.between}>
-          <h2 className={s.h2}>Scorecard vs. baseline</h2>
+          <h2 className={s.h2}>Evidence status — no synthetic scorecard</h2>
           <span className={s.muted}>
-            Overall = {Object.entries(evaluation.weights).map(([k, v]) => `${k} ${k === 'risk' ? '−' : ''}${v}`).join(' · ')}
+            No numeric score until measured evidence exists
           </span>
         </div>
         <div className={s.tableWrap}>
@@ -38,12 +38,11 @@ export function EvaluateStage({ project }: { project: Project }) {
                   <td style={{ minWidth: 200 }}>{r.title}</td>
                   {COLS.map((c) => (
                     <td key={c} style={{ minWidth: 70 }}>
-                      <div className={s.bar}><div className={s.barFill} style={{ width: `${r[c] * 10}%`, background: c === 'risk' ? '#ff8080' : undefined }} /></div>
-                      <span className={s.muted}>{r[c]}</span>
+                      {r[c] === null ? <span className={s.muted}>Not established</span> : <><div className={s.bar}><div className={s.barFill} style={{ width: `${r[c] * 10}%`, background: c === 'risk' ? '#ff8080' : undefined }} /></div><span className={s.muted}>{r[c]}</span></>}
                     </td>
                   ))}
-                  <td><b style={{ fontSize: '1.1rem' }}>{r.overall}</b></td>
-                  <td>{r.experimentVerdict ? <span className={`${s.chip} ${s[`v_${r.experimentVerdict}`]}`}>{r.experimentVerdict}</span> : '—'}</td>
+                  <td><b style={{ fontSize: '1.1rem' }}>{r.overall ?? 'Not established'}</b></td>
+                  <td><span className={s.chip}>{r.evidenceStatus}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -54,7 +53,7 @@ export function EvaluateStage({ project }: { project: Project }) {
       <div className={s.card}>
         <h2 className={s.h2}>Literature benchmarks</h2>
         {evaluation.benchmarks.length === 0 ? (
-          <p className={s.muted}>No quantitative claims were found in the core sources.</p>
+          <p className={s.muted}>No quantitative claims were found in the core sources. Any extracted claims are leads and have not been independently verified.</p>
         ) : (
           <ul className={s.list}>
             {evaluation.benchmarks.map((b) => (
