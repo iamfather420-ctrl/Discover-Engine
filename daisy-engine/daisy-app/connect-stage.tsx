@@ -9,7 +9,7 @@ const KIND_COLOR: Record<string, string> = {
   method: '#c4a5ff',
   concept: '#f5c542',
 };
-const TYPE_COLOR: Record<string, string> = { unexplored: '#6ee7b7', emerging: '#f5c542', established: '#4b5263' };
+const TYPE_COLOR: Record<string, string> = { not_observed_in_sample: '#6ee7b7', limited_sample_overlap: '#f5c542', higher_sample_overlap: '#4b5263' };
 
 /** Stage 3 — the connection network and ranked list of combinations. */
 export function ConnectStage({ project }: { project: Project }) {
@@ -36,7 +36,7 @@ export function ConnectStage({ project }: { project: Project }) {
             if (!a || !b) return null;
             return (
               <line key={c.id} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={TYPE_COLOR[c.type]} strokeOpacity={0.25 + c.score * 0.6}
-                strokeWidth={1 + c.score * 2.5} strokeDasharray={c.type === 'unexplored' ? '5 4' : undefined} />
+                strokeWidth={1 + c.score * 2.5} strokeDasharray={c.type === 'not_observed_in_sample' ? '5 4' : undefined} />
             );
           })}
           {nodes.map((n) => (
@@ -66,7 +66,7 @@ export function ConnectStage({ project }: { project: Project }) {
               {project.connections.map((c) => (
                 <tr key={c.id}>
                   <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
-                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type === 'unexplored' ? 'not observed in sample' : c.type === 'emerging' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
+                  <td><span className={`${s.chip} ${(c.type === 'not_observed_in_sample' ? s.t_unexplored : c.type === 'limited_sample_overlap' ? s.t_emerging : s.t_established)}`}>{c.type === 'unexplored' ? 'not observed in sample' : c.type === 'emerging' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
                   <td style={{ minWidth: 90 }}>
                     <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
                     <span className={s.muted}>{c.score.toFixed(2)}</span>
