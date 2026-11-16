@@ -41,12 +41,9 @@ describe('invention pipeline', () => {
     expect(inventions[0].componentIds.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('runs a reproducible experiment with a verdict', () => {
+  it('rejects synthetic simulation as experimental evidence', () => {
     const components = understand(discoveries, 'battery');
     const [inv] = invent('battery', components, connect(components, discoveries), discoveries);
-    const r1 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    const r2 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    expect(r1.meanImprovement).toEqual(r2.meanImprovement);
-    expect(['supported', 'inconclusive', 'rejected']).toContain(r1.verdict);
+    expect(() => runExperiment(inv, { trials: 500, baselineNoise: 3 })).toThrow(/Simulation disabled/);
   });
 });
