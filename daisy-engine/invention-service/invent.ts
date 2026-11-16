@@ -153,7 +153,7 @@ export function invent(
  * Generate a design from a user-chosen set of components.
  * @param query - core problem
  * @param parts - 2–4 selected components
- * @param connections - known connections (to determine novelty)
+ * @param connections - known connections (to identify known co-occurrence within the retrieved sample)
  * @param discoveries - Discover output
  */
 export function inventCustom(query: string, parts: TechComponent[], connections: Connection[], discoveries: Discovery[]): Invention {
