@@ -27,7 +27,7 @@ export const api = {
   createProject: (query: string, domains: string[]) =>
     request<Project>('/projects', { method: 'POST', body: JSON.stringify({ query, domains }) }),
   deleteProject: (id: string) => request<void>(`/projects/${id}`, { method: 'DELETE' }),
-  inventFrom: (id: string, componentIds: string[]) =>
+  ingestMeasurement: (id: string, measurement: unknown) =>\n    request(`/projects/${id}/evidence/measurements`, { method: 'POST', body: JSON.stringify(measurement) }),\n  inventFrom: (id: string, componentIds: string[]) =>
     request<Invention>(`/projects/${id}/inventions`, { method: 'POST', body: JSON.stringify({ componentIds }) }),
   evaluate: (id: string) => request<Evaluation>(`/projects/${id}/evaluation`),
   specUrl: (id: string, inv: string) => `${API_BASE}/projects/${id}/inventions/${inv}/spec`,
