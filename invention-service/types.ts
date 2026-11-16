@@ -127,11 +127,11 @@ export interface EvaluationRow {
   id: string;
   title: string;
   isBaseline: boolean;
-  feasibility: number;
-  impact: number;
-  evidence: number;
-  risk: number;
-  overall: number;
+  feasibility: number | null;
+  impact: number | null;
+  evidence: number | null;
+  risk: number | null;
+  overall: number | null;
   evidenceStatus: 'hypothesis_only' | 'measured_evidence_pending';
   experimentVerdict?: string;
 }
