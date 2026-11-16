@@ -67,7 +67,7 @@ export const design = {
 
 /**
  * Build the Export integration package (zip): README, per-invention design specs,
- * runnable prototype models, evaluation report and raw research data.
+ * design scaffolds, evaluation report and raw research data.
  * @param project - the project
  * @param evaluation - Evaluate output
  * @param inventionIds - optional subset to include
@@ -90,7 +90,7 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
       '- `inventions/<name>/DESIGN.md` — design specification, mechanism, risks, evidence',
       '- `inventions/<name>/prototype.ts` — design scaffold; no simulated performance claims',
       '- `inventions/<name>/invention.json` — machine-readable design',
-      '- `EVALUATION.md` — comparison against the current best practice',
+      '- `EVALUATION.md` — evidence status; no measured comparison is available',
       '- `data/` — raw discoveries, components and connections',
       '',
       '## Integration',
@@ -110,9 +110,9 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
     [
       '# Evaluation',
       '',
-      `Weights: ${Object.entries(evaluation.weights).map(([k, v]) => `${k} ${v}`).join(', ')} (risk subtracted)`,
+      `Numeric scoring disabled until measured evidence exists.`,
       '',
-      '| Design | Feasibility | Impact | Evidence | Risk | Overall | Experiment |',
+      '| Design | Feasibility | Impact | Evidence | Risk | Overall | Validation |',
       '|---|---|---|---|---|---|---|',
       ...evaluation.rows.map(
         (r) => `| ${r.title} | ${r.feasibility ?? 'not established'} | ${r.impact ?? 'not established'} | ${r.evidence ?? 'not established'} | ${r.risk ?? 'not established'} | **${r.overall ?? 'not established'}** | ${r.evidenceStatus} |`,
