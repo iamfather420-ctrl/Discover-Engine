@@ -31,7 +31,9 @@ export class InventionService {
   await this.repo.save(project);
   const found=await discover(project.query,project.domains,log);
   project.discoveries=await verifySourceMetadataBatch(found);
-  project.evidenceClaims=extractEvidenceClaims(project.discoveries);\n  log(`Claim provenance: recorded ${project.evidenceClaims.length} exact abstract-sentence leads; none are automatically marked scientifically verified.`);\n  const verified=project.discoveries.filter(d=>d.sourceVerification==='verified_metadata').length;
+  project.evidenceClaims=extractEvidenceClaims(project.discoveries);
+  log(`Claim provenance: recorded ${project.evidenceClaims.length} exact abstract-sentence leads; none are automatically marked scientifically verified.`);
+  const verified=project.discoveries.filter(d=>d.sourceVerification==='verified_metadata').length;
   const mismatched=project.discoveries.filter(d=>d.sourceVerification==='metadata_mismatch').length;
   log(`Bibliographic metadata: ${verified} matched, ${mismatched} mismatched, ${project.discoveries.length-verified-mismatched} unverified. Abstract claims are still unverified.`);
   if(!project.discoveries.length) throw new Error('No sources found — try a broader query.');
