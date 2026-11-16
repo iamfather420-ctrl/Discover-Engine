@@ -30,6 +30,10 @@ describe('invention pipeline', () => {
   it('extracts recurring components, connects them and invents designs', () => {
     const components = understand(discoveries, 'battery');
     expect(components.map((c) => c.name.toLowerCase())).toContain('solid electrolyte interfaces');
+    const extracted = components.find((c) => c.name.toLowerCase() === 'solid electrolyte interfaces')!;
+    expect(extracted.context).toContain('Solid electrolyte interfaces');
+    expect(extracted.contextSourceId).toBeTruthy();
+    expect(extracted.sourceIds).toContain(extracted.contextSourceId);
     const connections = connect(components, discoveries);
     expect(connections.length).toBeGreaterThan(0);
     const inventions = invent('battery', components, connections, discoveries);
