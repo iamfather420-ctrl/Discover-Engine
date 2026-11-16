@@ -41,7 +41,7 @@ export class InventionService {
   log(`Understand: extracted ${project.components.length} technical components`);
   project.stage='connect';await this.repo.save(project);
   project.connections=connect(project.components,eligibleSources);
-  log(`Connect: ranked ${project.connections.length} candidate connections (${project.connections.filter(c=>c.type==='unexplored').length} unexplored)`);
+  log(`Connect: ranked ${project.connections.length} candidate connections (${project.connections.filter(c=>c.type==='not_observed_in_sample').length} unexplored)`);
   project.stage='invent';await this.repo.save(project);
   project.inventions=invent(project.query,project.components,project.connections,eligibleSources);
   log(`Invent: generated ${project.inventions.length} engineering designs`);
