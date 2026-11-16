@@ -3,7 +3,7 @@ import { verifySourceMetadata } from './source-verification.js';
 import type { Discovery } from './types.js';
 
 const source: Discovery = {
-  id: 'W123456789', source: 'openalex', title: 'A verified paper title',
+  id: 'local-hash', providerId: 'W123456789', source: 'openalex', title: 'A verified paper title',
   abstract: 'Abstract text with an unsupported scientific claim.', year: 2024,
   url: 'https://openalex.org/W123456789', field: 'Engineering', lens: 'core',
   keywords: [], metrics: ['claims 42% improvement'], citations: 0, type: 'article',
