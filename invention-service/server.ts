@@ -30,6 +30,10 @@ export async function run() {
   res.json(project);
  }));
  app.delete('/projects/:id',wrap(async(req,res)=>{await engine.remove(String(req.params.id));res.status(204).end();}));
+ app.post('/projects/:id/evidence/measurements',wrap(async(req,res)=>{
+  const record=await engine.ingestMeasurement(String(req.params.id),req.body);
+  res.status(201).json(record);
+ }));
  app.post('/projects/:id/inventions',wrap(async(req,res)=>{
   const ids=req.body?.componentIds;
   if(!Array.isArray(ids)||ids.some((id:unknown)=>typeof id!=='string')) throw new Error('componentIds must be an array of component ID strings');
