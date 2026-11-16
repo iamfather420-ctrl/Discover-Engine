@@ -125,6 +125,9 @@ jobs:
             exit 1
           fi
 
+          jq -e '.evidenceClaims | type == "array"' /tmp/project.json
+          jq -e '[.evidenceClaims[] | select(.reviewStatus == "human_review_required" or .reviewStatus == "insufficient_evidence" or .reviewStatus == "conflicting")] | length == (.evidenceClaims | length)' /tmp/project.json
+
           curl --fail --silent --show-error \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/evaluation" > /tmp/evaluation.json
           jq -e '.rows | length > 0' /tmp/evaluation.json
@@ -140,6 +143,7 @@ jobs:
           curl --fail --silent --show-error \
             "http://127.0.0.1:$PORT/projects/$PROJECT_ID/export" -o /tmp/discover-engine-export.zip
           unzip -t /tmp/discover-engine-export.zip
+          unzip -Z1 /tmp/discover-engine-export.zip | grep -q 'evidence-claims.json'
           echo "LIVE PIPELINE PASSED: project=$PROJECT_ID"
 
   frontend:
