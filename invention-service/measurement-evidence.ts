@@ -49,7 +49,7 @@ export function validateMeasurementInput(input: unknown): { valid: true; value: 
 /** Ingestion records measurements as unverified. This function has no verification/promotion path. */
 export function createMeasurementRecord(input: unknown, now = new Date().toISOString()): MeasurementRecord {
   const checked = validateMeasurementInput(input);
-  if (!checked.valid) throw new Error(checked.reason);
+  if ('reason' in checked) throw new Error(checked.reason);
   return {
     ...checked.value,
     id: randomUUID(),
