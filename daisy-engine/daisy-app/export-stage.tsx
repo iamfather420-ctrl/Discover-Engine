@@ -35,7 +35,7 @@ export function ExportStage({ project }: { project: Project }) {
           <li><b>inventions/&lt;name&gt;/DESIGN.md</b> — spec, mechanism, risks, experiment results, evidence</li>
           <li><b>inventions/&lt;name&gt;/prototype.ts</b> — runnable parametric prototype model</li>
           <li><b>inventions/&lt;name&gt;/invention.json</b> — machine-readable design</li>
-          <li><b>data/</b> — raw discoveries, components and connections</li>
+          <li><b>data/</b> — raw discoveries, components, connections, exact-quote claim provenance, and measured_unverified submissions</li>
         </ul>
       </div>
     </div>
