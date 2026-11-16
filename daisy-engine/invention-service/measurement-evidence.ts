@@ -33,7 +33,11 @@ export function validateMeasurementInput(input: unknown): { valid: true; value: 
   if (!x.protocol || !nonEmpty(x.protocol.id) || !nonEmpty(x.protocol.version) || !nonEmpty(x.protocol.method)) return { valid: false, reason: 'Protocol ID, version and method are required' };
   if (!x.baseline || !nonEmpty(x.baseline.description) || !finite(x.baseline.value) || !nonEmpty(x.baseline.unit)) return { valid: false, reason: 'A measured baseline value, unit and description are required' };
   if (!Array.isArray(x.observations) || x.observations.length === 0 || x.observations.some((o: any) => !o || !finite(o.value) || !nonEmpty(o.unit) || !nonEmpty(o.replicate) || !nonEmpty(o.observedAt) || Number.isNaN(Date.parse(o.observedAt)))) return { valid: false, reason: 'At least one observation with numeric value, unit, timestamp and replicate ID is required' };
-  if (!Number.isInteger(x.sampleSize) || x.sampleSize < x.observations.length || x.sampleSize < 1) return { valid: false, reason: 'sampleSize must be an integer at least as large as the observation count' };
+  const replicateIds = new Set(x.observations.map((o: any) => o.replicate));
+  const observationKeys = x.observations.map((o: any) => `${o.replicate}:${new Date(o.observedAt).toISOString()}`);
+  if (!Number.isInteger(x.sampleSize) || x.sampleSize < replicateIds.size || x.sampleSize < 1) return { valid: false, reason: 'sampleSize must be an integer at least as large as the number of distinct replicate IDs' };
+  if (new Set(observationKeys).size !== observationKeys.length) return { valid: false, reason: 'Duplicate observation for the same replicate and timestamp' };
+  if (x.observations.some((o: any) => o.unit !== x.baseline.unit)) return { valid: false, reason: 'Baseline and observation units must match for a direct comparison' };
   if (!nonEmpty(x.environment) || !nonEmpty(x.operator)) return { valid: false, reason: 'Environment and operator attribution are required' };
   if (!x.dataset || !httpsUri(x.dataset.uri) || !sha256(x.dataset.sha256) || !nonEmpty(x.dataset.mediaType)) return { valid: false, reason: 'Dataset requires an HTTPS URI, media type and SHA-256 digest' };
   if (!x.analysis || !nonEmpty(x.analysis.method) || !nonEmpty(x.analysis.version) || !httpsUri(x.analysis.codeUri) || !sha256(x.analysis.codeSha256)) return { valid: false, reason: 'Analysis method/version and code URI/SHA-256 are required' };
