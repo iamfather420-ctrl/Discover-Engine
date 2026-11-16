@@ -141,6 +141,8 @@ export interface Project {
   error?: string;
   log: string[];
   discoveries: Discovery[];
+  /** Exact abstract-sentence provenance records; never automatically truth-verified. */
+  evidenceClaims?: EvidenceClaim[];
   components: TechComponent[];
   connections: Connection[];
   inventions: Invention[];
