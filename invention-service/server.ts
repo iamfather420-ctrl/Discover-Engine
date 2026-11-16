@@ -35,11 +35,10 @@ export async function run() {
   if(!Array.isArray(ids)||ids.some((id:unknown)=>typeof id!=='string')) throw new Error('componentIds must be an array of component ID strings');
   res.status(201).json(await engine.inventFrom(String(req.params.id),ids));
  }));
- app.post('/projects/:id/inventions/:inv/experiments',wrap(async(req,res)=>{
-  const trials=req.body?.trials??2000, baselineNoise=req.body?.baselineNoise??3;
-  if(typeof trials!=='number'||typeof baselineNoise!=='number') throw new Error('Trials and baseline noise must be numbers');
-  res.status(201).json(await engine.experiment(String(req.params.id),String(req.params.inv),{trials,baselineNoise}));
- }));
+ // Permanently disabled: simulation output is not experimental evidence.
+ app.post('/projects/:id/inventions/:inv/experiments',(_req,res)=>{
+  res.status(410).json({message:'Simulation disabled: synthetic model output is not real experimental evidence.'});
+ });
  app.get('/projects/:id/evaluation',wrap(async(req,res)=>res.json(await engine.evaluate(String(req.params.id)))));
  app.get('/projects/:id/inventions/:inv/spec',wrap(async(req,res)=>res.type('text/markdown').send(await engine.spec(String(req.params.id),String(req.params.inv)))));
  app.get('/projects/:id/export',wrap(async(req,res)=>{
