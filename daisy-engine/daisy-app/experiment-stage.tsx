@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { FormEvent } from 'react';
 import type { Project } from '@agatenft/daisy-engine.invention-service';
 import { api } from './api.js';
 import s from './ui.module.css';
@@ -19,7 +20,7 @@ export function ExperimentStage({ project, onChange }: { project: Project; initi
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const submit = async (event: React.FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault(); setMessage(''); setBusy(true);
     try {
       const record = await api.ingestMeasurement(project.id, JSON.parse(payload));
