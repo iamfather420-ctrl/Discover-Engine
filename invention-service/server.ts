@@ -2,7 +2,10 @@ import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { InventionService } from './invention-service.js';
 import { ProjectRepository, connectDb } from './project-repository.js';
+import { randomUUID } from 'node:crypto';
+import { reviewAssertion, bearerMatches } from './assertion-api.js';
 import { normalizeProjectInput } from './validation.js';
+import type { AddressInfo } from 'node:net';
 type Handler = (req: Request, res: Response) => Promise<unknown>;
 const wrap = (fn: Handler) => (req: Request, res: Response, _next: NextFunction) => {
  fn(req,res).catch((error: unknown) => {
@@ -52,6 +55,25 @@ export async function run() {
   res.setHeader('Content-Disposition',`attachment; filename="${name}"`);
   res.send(data);
  }));
- const server=app.listen(port,()=>console.log(`🚀  Invention service ready at: http://localhost:${port}`));
- return {port,stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}};
+ app.post('/v1/assertions', (req, res) => {
+  const expected = process.env.DISCOVERY_API_TOKEN ?? '';
+  if (expected.length < 32) return res.status(503).json({ error: 'discovery_auth_not_configured', publishable: false });
+  if (!bearerMatches(req.header('authorization'), expected)) return res.status(401).json({ error: 'discovery_authentication_required', publishable: false });
+  const discovery = req.body?.discovery;
+  const claim = req.body?.claim;
+  if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
+    return res.status(400).json({ error: 'invalid_assertion', publishable: false });
+  }
+  const requestId = /^[A-Za-z0-9._:-]{8,80}$/.test(req.header('x-request-id') ?? '') ? String(req.header('x-request-id')) : randomUUID();
+  res.setHeader('x-request-id', requestId);
+  res.json({ ...reviewAssertion(discovery, claim), request_id: requestId });
+ });
+ const server=app.listen(port);
+ await new Promise<void>((resolve, reject) => {
+  server.once('listening', () => resolve());
+  server.once('error', reject);
+ });
+ const bound=(server.address() as AddressInfo).port;
+ console.log(`[invention-service] ready port=${bound}`);
+ return {port: bound, stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}};
 }
