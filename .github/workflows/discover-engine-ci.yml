@@ -14,6 +14,9 @@ on:
     paths:
       - "invention-service/**"
       - "daisy-app/**"
+      - "daisy-engine/**"
+      - "workspace.jsonc"
+      - ".bitmap"
       - ".github/workflows/discover-engine-ci.yml"
   workflow_dispatch:
 
