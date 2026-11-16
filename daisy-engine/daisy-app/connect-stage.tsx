@@ -49,7 +49,7 @@ export function ConnectStage({ project }: { project: Project }) {
           ))}
         </svg>
         <div className={s.row} style={{ marginTop: '0.6rem', padding: '0 0.4rem' }}>
-          <span className={`${s.chip} ${s.t_unexplored}`} >- - not observed in sample</span>
+          <span className={`${s.chip} ${s.t_unexplored}`}>- - not observed in sample</span>
           <span className={`${s.chip} ${s.t_emerging}`}>— limited sample overlap</span>
           <span className={`${s.chip} ${s.t_established}`}>— higher sample overlap</span>
         </div>
@@ -66,7 +66,7 @@ export function ConnectStage({ project }: { project: Project }) {
               {project.connections.map((c) => (
                 <tr key={c.id}>
                   <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
-                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type}</span></td>
+                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type === 'unexplored' ? 'not observed in sample' : c.type === 'emerging' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
                   <td style={{ minWidth: 90 }}>
                     <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
                     <span className={s.muted}>{c.score.toFixed(2)}</span>
