@@ -9,7 +9,10 @@ const source: Discovery = {
   url: 'https://openalex.org/W123456789', field: 'Engineering', lens: 'core',
   keywords: [], metrics: ['claims 42% improvement'], citations: 0, type: 'article',
 };
-const inverted = Object.fromEntries(abstract.split(' ').map((word, position) => [word, [position]]));
+const inverted = abstract.split(' ').reduce<Record<string, number[]>>((index, word, position) => {
+  (index[word] ||= []).push(position);
+  return index;
+}, {});
 
 afterEach(() => vi.unstubAllGlobals());
 
