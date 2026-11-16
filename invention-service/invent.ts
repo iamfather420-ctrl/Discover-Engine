@@ -152,7 +152,7 @@ export function inventCustom(query: string, parts: TechComponent[], connections:
   const ids = new Set(parts.map((p) => p.id));
   const shared = parts.every((p, i) => i === 0 || p.sourceIds.some((s) => parts[0].sourceIds.includes(s)));
   const known = connections.find((c) => ids.has(c.aId) && ids.has(c.bId));
-  const conn = known || { type: shared ? 'emerging' : 'unexplored', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
+  const conn = known || { type: shared ? 'limited_sample_overlap' : 'not_observed_in_sample', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
   const inv = buildInvention(query, parts, conn as Connection, inferTarget(query, discoveries), true);
   inv.title = `Custom: ${titleCase(inv.title)}`;
   return inv;
