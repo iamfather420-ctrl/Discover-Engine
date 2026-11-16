@@ -177,6 +177,8 @@ jobs:
           node-version: 22
       - name: Install Bit
         run: npx --yes @teambit/bvm install
+      - name: Add Bit to subsequent step PATH
+        run: echo "$HOME/bin" >> "$GITHUB_PATH"
       - name: Install Bit workspace dependencies
         run: bit install
       - name: Build all Bit components
