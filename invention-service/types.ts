@@ -19,6 +19,9 @@ export interface Discovery {
   citations: number;
   /** Work type, e.g. article, preprint, review. */
   type: string;
+  /** Bibliographic identity only; does not validate scientific claims. */
+  sourceVerification?: 'verified_metadata' | 'metadata_mismatch' | 'unverified';
+  sourceVerificationDetail?: string;
 }
 
 /** Category of a technical building block. */
