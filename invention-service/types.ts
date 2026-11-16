@@ -20,6 +20,8 @@ export interface Discovery {
   /** Work type, e.g. article, preprint, review. */
   type: string;
   /** Bibliographic identity only; does not validate scientific claims. */
+  /** Stable upstream provider ID; local IDs are intentionally opaque hashes. */
+  providerId?: string;
   sourceVerification?: 'verified_metadata' | 'metadata_mismatch' | 'unverified';
   sourceVerificationDetail?: string;
 }
