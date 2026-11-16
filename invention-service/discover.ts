@@ -45,6 +45,7 @@ export async function searchOpenAlex(query: string, lens: string, limit = 8): Pr
       const abstract = rebuildAbstract(w.abstract_inverted_index);
       return {
         id: shortId(w.id),
+        providerId: w.id,
         source: 'openalex',
         title: w.title,
         abstract,
@@ -97,6 +98,7 @@ export async function searchArxiv(query: string, lens: string, limit = 6): Promi
     const prefix = cat.split('.')[0].replace(/-ph$/, '') ;
     return {
       id: shortId(id),
+      providerId: id,
       source: 'arxiv',
       title: xmlTag(entry, 'title'),
       abstract,

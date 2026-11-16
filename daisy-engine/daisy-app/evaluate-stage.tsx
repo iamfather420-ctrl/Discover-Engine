@@ -5,64 +5,36 @@ import s from './ui.module.css';
 
 const COLS = ['feasibility', 'impact', 'evidence', 'risk'] as const;
 
-/** Stage 6 — compare designs against the current best practice and literature benchmarks. */
+/** Stage 6 — displays evidence status without manufacturing numeric scores. */
 export function EvaluateStage({ project }: { project: Project }) {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     api.evaluate(project.id).then(setEvaluation).catch((e) => setError(e.message));
-  }, [project]);
-
+  }, [project.id]);
   if (error) return <div className={s.error}>{error}</div>;
-  if (!evaluation) return <div className={s.empty}>Scoring designs…</div>;
-
+  if (!evaluation) return <div className={s.empty}>Loading evidence status…</div>;
   return (
     <div className={s.stack}>
-      <div className={s.card}>
-        <div className={s.between}>
-          <h2 className={s.h2}>Scorecard vs. baseline</h2>
-          <span className={s.muted}>
-            Overall = {Object.entries(evaluation.weights).map(([k, v]) => `${k} ${k === 'risk' ? '−' : ''}${v}`).join(' · ')}
-          </span>
-        </div>
+      <section className={s.card}>
+        <h2 className={s.h2}>Evidence assessment</h2>
+        <p className={s.muted}>Numeric rankings are withheld until measured evidence and a measured baseline are available.</p>
         <div className={s.tableWrap}>
           <table className={s.table}>
-            <thead>
-              <tr><th>#</th><th>Design</th>{COLS.map((c) => <th key={c}>{c}</th>)}<th>Overall</th><th>Experiment</th></tr>
-            </thead>
-            <tbody>
-              {evaluation.rows.map((r, i) => (
-                <tr key={r.id} className={r.isBaseline ? s.baselineRow : undefined}>
-                  <td>{r.isBaseline ? '—' : i}</td>
-                  <td style={{ minWidth: 200 }}>{r.title}</td>
-                  {COLS.map((c) => (
-                    <td key={c} style={{ minWidth: 70 }}>
-                      <div className={s.bar}><div className={s.barFill} style={{ width: `${r[c] * 10}%`, background: c === 'risk' ? '#ff8080' : undefined }} /></div>
-                      <span className={s.muted}>{r[c]}</span>
-                    </td>
-                  ))}
-                  <td><b style={{ fontSize: '1.1rem' }}>{r.overall}</b></td>
-                  <td>{r.experimentVerdict ? <span className={`${s.chip} ${s[`v_${r.experimentVerdict}`]}`}>{r.experimentVerdict}</span> : '—'}</td>
-                </tr>
-              ))}
-            </tbody>
+            <thead><tr><th>Design</th>{COLS.map(c => <th key={c}>{c}</th>)}<th>Overall</th><th>Status</th></tr></thead>
+            <tbody>{evaluation.rows.map(r => <tr key={r.id}>
+              <td>{r.title}</td>
+              {COLS.map(c => <td key={c}>Not established</td>)}
+              <td>Not established</td><td>{r.evidenceStatus}</td>
+            </tr>)}</tbody>
           </table>
         </div>
-      </div>
-
-      <div className={s.card}>
-        <h2 className={s.h2}>Literature benchmarks</h2>
-        {evaluation.benchmarks.length === 0 ? (
-          <p className={s.muted}>No quantitative claims were found in the core sources.</p>
-        ) : (
-          <ul className={s.list}>
-            {evaluation.benchmarks.map((b) => (
-              <li key={b.claim + b.source}>“{b.claim}” — <a className={s.link} href={b.url} target="_blank" rel="noreferrer">{b.source}</a></li>
-            ))}
-          </ul>
-        )}
-      </div>
+      </section>
+      <section className={s.card}>
+        <h2 className={s.h2}>Literature leads — abstract extracts unverified</h2>
+        {evaluation.benchmarks.length === 0 ? <p className={s.muted}>No eligible core-source extracts were found.</p> :
+          <ul className={s.list}>{evaluation.benchmarks.map(b => <li key={b.claim + b.source}>“{b.claim}” — <a className={s.link} href={b.url} target="_blank" rel="noreferrer">{b.source}</a></li>)}</ul>}
+      </section>
     </div>
   );
 }

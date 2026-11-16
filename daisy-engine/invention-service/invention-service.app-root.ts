@@ -60,17 +60,10 @@ export async function run() {
     wrap(async (req, res) => res.status(201).json(await engine.inventFrom(String(req.params.id), req.body?.componentIds || []))),
   );
 
-  app.post(
-    '/projects/:id/inventions/:inv/experiments',
-    wrap(async (req, res) =>
-      res.status(201).json(
-        await engine.experiment(String(req.params.id), String(req.params.inv), {
-          trials: Number(req.body?.trials) || 2000,
-          baselineNoise: Number(req.body?.baselineNoise ?? 3),
-        }),
-      ),
-    ),
-  );
+  // Permanently disabled: synthetic simulations are not experimental evidence.
+  app.post('/projects/:id/inventions/:inv/experiments', (_req, res) => {
+    res.status(410).json({ message: 'Simulation disabled: synthetic model output is not real experimental evidence.' });
+  });
 
   app.get('/projects/:id/evaluation', wrap(async (req, res) => res.json(await engine.evaluate(String(req.params.id)))));
 

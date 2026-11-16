@@ -19,6 +19,11 @@ export interface Discovery {
   citations: number;
   /** Work type, e.g. article, preprint, review. */
   type: string;
+  /** Bibliographic identity only; does not validate scientific claims. */
+  /** Stable upstream provider ID; local IDs are intentionally opaque hashes. */
+  providerId?: string;
+  sourceVerification?: 'verified_metadata' | 'metadata_mismatch' | 'unverified';
+  sourceVerificationDetail?: string;
 }
 
 /** Category of a technical building block. */
@@ -34,10 +39,12 @@ export interface TechComponent {
   mentions: number;
   /** A sentence from a source that shows the component in context. */
   context: string;
+  /** Exact source record whose abstract contains `context`. */
+  contextSourceId?: string;
 }
 
 /** How well-trodden a relationship is in the literature. */
-export type ConnectionType = 'unexplored' | 'emerging' | 'established';
+export type ConnectionType = 'not_observed_in_sample' | 'limited_sample_overlap' | 'higher_sample_overlap';
 
 /** A relationship between two components found in the Connect stage. */
 export interface Connection {
@@ -63,6 +70,7 @@ export interface ExperimentParams {
 export interface ExperimentResult {
   id: string;
   createdAt: string;
+  evidenceClass: 'simulation_only';
   params: ExperimentParams;
   meanImprovement: number;
   stdDev: number;
@@ -89,14 +97,14 @@ export interface Invention {
   sourceIds: string[];
   connectionType: ConnectionType;
   crossDomain: boolean;
-  /** Expected % improvement over baseline. */
-  expectedGain: number;
-  /** Std-dev of the gain estimate (%). */
-  uncertainty: number;
+  /** No performance gain is asserted until supported by measurements. */
+  expectedGain: null;
+  /** No uncertainty estimate is asserted without measured data. */
+  uncertainty: null;
   /** 1 (simple) – 5 (very complex). */
   complexity: number;
-  /** 0–1 maturity of the underlying evidence. */
-  maturity: number;
+  /** No numeric evidence maturity is inferred from source counts. */
+  maturity: null;
   custom: boolean;
   experiments: ExperimentResult[];
 }
@@ -126,11 +134,12 @@ export interface EvaluationRow {
   id: string;
   title: string;
   isBaseline: boolean;
-  feasibility: number;
-  impact: number;
-  evidence: number;
-  risk: number;
-  overall: number;
+  feasibility: number | null;
+  impact: number | null;
+  evidence: number | null;
+  risk: number | null;
+  overall: number | null;
+  evidenceStatus: 'hypothesis_only' | 'measured_evidence_pending';
   experimentVerdict?: string;
 }
 

@@ -19,6 +19,11 @@ export interface Discovery {
   citations: number;
   /** Work type, e.g. article, preprint, review. */
   type: string;
+  /** Bibliographic identity only; does not validate scientific claims. */
+  /** Stable upstream provider ID; local IDs are intentionally opaque hashes. */
+  providerId?: string;
+  sourceVerification?: 'verified_metadata' | 'metadata_mismatch' | 'unverified';
+  sourceVerificationDetail?: string;
 }
 
 /** Category of a technical building block. */
@@ -34,10 +39,12 @@ export interface TechComponent {
   mentions: number;
   /** A sentence from a source that shows the component in context. */
   context: string;
+  /** Exact source record whose abstract contains `context`. */
+  contextSourceId?: string;
 }
 
 /** How well-trodden a relationship is in the literature. */
-export type ConnectionType = 'unexplored' | 'emerging' | 'established';
+export type ConnectionType = 'not_observed_in_sample' | 'limited_sample_overlap' | 'higher_sample_overlap';
 
 /** A relationship between two components found in the Connect stage. */
 export interface Connection {

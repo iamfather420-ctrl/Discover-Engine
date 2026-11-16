@@ -12,7 +12,7 @@ export function InventStage({ project, onTest }: { project: Project; onTest: (in
             <div className={s.between} style={{ alignItems: 'flex-start' }}>
               <div style={{ flex: '1 1 320px' }}>
                 <div className={s.row} style={{ marginBottom: '0.4rem' }}>
-                  <span className={`${s.chip} ${s[`t_${inv.connectionType}`]}`}>{inv.connectionType}</span>
+                  <span className={s.chip}>{inv.connectionType === 'not_observed_in_sample' ? 'not observed in retrieved sample' : inv.connectionType === 'limited_sample_overlap' ? 'limited sample overlap' : 'higher sample overlap'}</span>
                   {inv.crossDomain && <span className={s.chip}>cross-domain</span>}
                   {inv.custom && <span className={`${s.chip} ${s.chipOn}`}>custom</span>}
                   <span className={s.chip}>hypothesis only</span>

@@ -51,13 +51,9 @@ function buildInvention(
   const seed = hash(parts.map((p) => p.id).join('|'));
   const names = parts.map((p) => p.name);
   const fields = [...new Set(parts.flatMap((p) => p.fields))];
-  const evidence = parts.reduce((s, p) => s + p.mentions, 0);
-  const maturity = clamp(evidence / (parts.length * 6), 0.1, 1);
-
-  const base = conn.type === 'unexplored' ? 22 : conn.type === 'emerging' ? 14 : 7;
-  const expectedGain = Math.round((base * (0.7 + (seed % 60) / 100) + (conn.crossDomain ? 4 : 0)) * 10) / 10;
-  const uncertainty = Math.round((expectedGain * (1.15 - maturity * 0.75)) * 10) / 10;
-  const complexity = clamp(Math.round(parts.length + (conn.crossDomain ? 1 : 0) + (1 - maturity) * 1.5), 1, 5);
+  // Source mention counts and connection labels are not performance evidence.
+  // Do not synthesize gains, uncertainty, or evidence maturity.
+  const complexity = clamp(parts.length + (conn.crossDomain ? 1 : 0), 1, 5);
 
   const title = `${pick(VERBS, seed)} ${names[0]} × ${names[1]} ${pick(NOUNS, seed >>> 3)}`;
   const roles = parts.map((p) => `${p.name} as ${ROLE[p.kind]}`).join(', ');
@@ -66,13 +62,9 @@ function buildInvention(
     id: shortId(title + query + (custom ? 'c' : '')),
     title,
     summary: `A ${query} design that combines ${roles}. ${
-      conn.type === 'unexplored'
-        ? 'These components have not been studied together in the surveyed literature.'
-        : conn.type === 'emerging'
-          ? 'This pairing appears in only a handful of early studies.'
-          : 'This builds on a proven pairing and pushes it further.'
+      'This is a proposed combination assembled from literature-derived components; the combined design has not been validated.'
     }`,
-    hypothesis: `Integrating ${names.join(' with ')} will improve the ${target} by ~${expectedGain}% versus the current best practice, by letting each component compensate for the limits of the other.`,
+    hypothesis: `Integrating ${names.join(' with ')} may affect the ${target}. Direction and magnitude of any effect are unknown and require controlled measurement.`,
     targetMetric: target,
     componentIds: parts.map((p) => p.id),
     componentNames: names,
@@ -85,10 +77,10 @@ function buildInvention(
     sourceIds: [...new Set(parts.flatMap((p) => p.sourceIds))],
     connectionType: conn.type,
     crossDomain: conn.crossDomain,
-    expectedGain,
-    uncertainty,
+    expectedGain: null,
+    uncertainty: null,
     complexity,
-    maturity: Math.round(maturity * 100) / 100,
+    maturity: null,
     custom,
     experiments: [],
   };
@@ -153,14 +145,14 @@ export function invent(
  * Generate a design from a user-chosen set of components.
  * @param query - core problem
  * @param parts - 2–4 selected components
- * @param connections - known connections (to determine novelty)
+ * @param connections - known connections (to identify known co-occurrence within the retrieved sample)
  * @param discoveries - Discover output
  */
 export function inventCustom(query: string, parts: TechComponent[], connections: Connection[], discoveries: Discovery[]): Invention {
   const ids = new Set(parts.map((p) => p.id));
   const shared = parts.every((p, i) => i === 0 || p.sourceIds.some((s) => parts[0].sourceIds.includes(s)));
   const known = connections.find((c) => ids.has(c.aId) && ids.has(c.bId));
-  const conn = known || { type: shared ? 'emerging' : 'unexplored', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
+  const conn = known || { type: shared ? 'limited_sample_overlap' : 'not_observed_in_sample', crossDomain: new Set(parts.map((p) => p.kind)).size > 1 };
   const inv = buildInvention(query, parts, conn as Connection, inferTarget(query, discoveries), true);
   inv.title = `Custom: ${titleCase(inv.title)}`;
   return inv;

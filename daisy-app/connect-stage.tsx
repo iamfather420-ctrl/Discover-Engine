@@ -9,7 +9,7 @@ const KIND_COLOR: Record<string, string> = {
   method: '#c4a5ff',
   concept: '#f5c542',
 };
-const TYPE_COLOR: Record<string, string> = { unexplored: '#6ee7b7', emerging: '#f5c542', established: '#4b5263' };
+const TYPE_COLOR: Record<string, string> = { not_observed_in_sample: '#6ee7b7', limited_sample_overlap: '#f5c542', higher_sample_overlap: '#4b5263' };
 
 /** Stage 3 — the connection network and ranked list of combinations. */
 export function ConnectStage({ project }: { project: Project }) {
@@ -29,14 +29,14 @@ export function ConnectStage({ project }: { project: Project }) {
   return (
     <div className={s.stack}>
       <div className={s.card} style={{ padding: '0.75rem' }}>
-        <svg viewBox="0 0 760 460" className={s.network} role="img" aria-label="Technology connection network">
+        <svg viewBox="0 0 760 460" className={s.network} role="img" aria-label="Retrieved-sample association network">
           {project.connections.map((c) => {
             const a = pos.get(c.aId);
             const b = pos.get(c.bId);
             if (!a || !b) return null;
             return (
               <line key={c.id} x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={TYPE_COLOR[c.type]} strokeOpacity={0.25 + c.score * 0.6}
-                strokeWidth={1 + c.score * 2.5} strokeDasharray={c.type === 'unexplored' ? '5 4' : undefined} />
+                strokeWidth={1 + c.score * 2.5} strokeDasharray={c.type === 'not_observed_in_sample' ? '5 4' : undefined} />
             );
           })}
           {nodes.map((n) => (
@@ -49,24 +49,24 @@ export function ConnectStage({ project }: { project: Project }) {
           ))}
         </svg>
         <div className={s.row} style={{ marginTop: '0.6rem', padding: '0 0.4rem' }}>
-          <span className={`${s.chip} ${s.t_unexplored}`}>- - unexplored</span>
-          <span className={`${s.chip} ${s.t_emerging}`}>— emerging</span>
-          <span className={`${s.chip} ${s.t_established}`}>— established</span>
+          <span className={`${s.chip} ${s.t_unexplored}`}>- - not observed in sample</span>
+          <span className={`${s.chip} ${s.t_emerging}`}>— limited sample overlap</span>
+          <span className={`${s.chip} ${s.t_established}`}>— higher sample overlap</span>
         </div>
       </div>
 
       <div className={s.card}>
-        <h2 className={s.h2}>Ranked connections</h2>
+        <h2 className={s.h2}>Retrieved-sample associations</h2><p className={s.muted}>Scores and co-occurrence labels describe only this retrieved sample. They do not prove novelty, compatibility, or effectiveness.</p>
         <div className={s.tableWrap}>
           <table className={s.table}>
             <thead>
-              <tr><th>Combination</th><th>Type</th><th>Score</th><th>Why</th></tr>
+              <tr><th>Combination</th><th>Sample label</th><th>Heuristic score</th><th>Why</th></tr>
             </thead>
             <tbody>
               {project.connections.map((c) => (
                 <tr key={c.id}>
                   <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
-                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type}</span></td>
+                  <td><span className={`${s.chip} ${(c.type === 'not_observed_in_sample' ? s.t_unexplored : c.type === 'limited_sample_overlap' ? s.t_emerging : s.t_established)}`}>{c.type === 'not_observed_in_sample' ? 'not observed in sample' : c.type === 'limited_sample_overlap' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
                   <td style={{ minWidth: 90 }}>
                     <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
                     <span className={s.muted}>{c.score.toFixed(2)}</span>

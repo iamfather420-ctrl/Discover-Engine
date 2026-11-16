@@ -30,6 +30,10 @@ describe('invention pipeline', () => {
   it('extracts recurring components, connects them and invents designs', () => {
     const components = understand(discoveries, 'battery');
     expect(components.map((c) => c.name.toLowerCase())).toContain('solid electrolyte interfaces');
+    const extracted = components.find((c) => c.name.toLowerCase() === 'solid electrolyte interfaces')!;
+    expect(extracted.context).toContain('Solid electrolyte interfaces');
+    expect(extracted.contextSourceId).toBeTruthy();
+    expect(extracted.sourceIds).toContain(extracted.contextSourceId);
     const connections = connect(components, discoveries);
     expect(connections.length).toBeGreaterThan(0);
     const inventions = invent('battery', components, connections, discoveries);
@@ -37,12 +41,9 @@ describe('invention pipeline', () => {
     expect(inventions[0].componentIds.length).toBeGreaterThanOrEqual(2);
   });
 
-  it('runs a reproducible experiment with a verdict', () => {
+  it('rejects synthetic simulation as experimental evidence', () => {
     const components = understand(discoveries, 'battery');
     const [inv] = invent('battery', components, connect(components, discoveries), discoveries);
-    const r1 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    const r2 = runExperiment(inv, { trials: 500, baselineNoise: 3 });
-    expect(r1.meanImprovement).toEqual(r2.meanImprovement);
-    expect(['supported', 'inconclusive', 'rejected']).toContain(r1.verdict);
+    expect(() => runExperiment(inv, { trials: 500, baselineNoise: 3 })).toThrow(/Simulation disabled/);
   });
 });

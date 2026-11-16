@@ -5,6 +5,7 @@ export { understand, classify } from './understand.js';
 export { connect } from './connect.js';
 export { invent, inventCustom } from './invent.js';
 export { runExperiment } from './experiment.js';
+export { verifySourceMetadata, verifySourceMetadataBatch } from './source-verification.js';
 export { evaluate, WEIGHTS } from './evaluate.js';
 export { buildExportPackage, designSpec } from './export-package.js';
 export type {

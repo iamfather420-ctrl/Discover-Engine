@@ -6,11 +6,17 @@ on:
     paths:
       - "invention-service/**"
       - "daisy-app/**"
+      - "daisy-engine/**"
+      - "workspace.jsonc"
+      - ".bitmap"
       - ".github/workflows/discover-engine-ci.yml"
   pull_request:
     paths:
       - "invention-service/**"
       - "daisy-app/**"
+      - "daisy-engine/**"
+      - "workspace.jsonc"
+      - ".bitmap"
       - ".github/workflows/discover-engine-ci.yml"
   workflow_dispatch:
 
@@ -160,9 +166,27 @@ jobs:
       - name: Build Daisy frontend
         run: npm run build
 
+  bit-workspace:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Bit
+        run: npx --yes @teambit/bvm install
+      - name: Add Bit to subsequent step PATH
+        run: echo "$HOME/bin" >> "$GITHUB_PATH"
+      - name: Install Bit workspace dependencies
+        run: bit install
+      - name: Build all Bit components
+        run: bit build
+
   commit-lockfiles:
     runs-on: ubuntu-latest
-    needs: [test, frontend]
+    needs: [test, frontend, bit-workspace]
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

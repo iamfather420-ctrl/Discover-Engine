@@ -39,8 +39,11 @@ export function designSpec(project: Project, inv: Invention): string {
     `- Complexity descriptor: ${inv.complexity}/5 (design heuristic, not measured performance)`,
     '- Experimental validation: pending independent, controlled measurement.',
     '',
+    '## Source provenance',
+    ...sources.map((s) => `- [${s.title}](${s.url}) — metadata: ${s.sourceVerification || 'unverified'} (${s.sourceVerificationDetail || 'not checked'}); scientific claims are not independently verified.`),
+    '',
     '## Evidence',
-    ...sources.map((s) => `- [${s.title}](${s.url}) — ${s.field}, ${s.year ?? 'n.d.'}`),
+    'No abstract-derived statement is treated as independently verified evidence.',
     '',
   ].join('\n');
 }
@@ -118,7 +121,7 @@ export async function buildExportPackage(project: Project, evaluation: Evaluatio
         (r) => `| ${r.title} | ${r.feasibility ?? 'not established'} | ${r.impact ?? 'not established'} | ${r.evidence ?? 'not established'} | ${r.risk ?? 'not established'} | **${r.overall ?? 'not established'}** | ${r.evidenceStatus} |`,
       ),
       '',
-      '## Literature benchmarks',
+      '## Literature leads — extracted claims are unverified',
       ...evaluation.benchmarks.map((b) => `- "${b.claim}" — [${b.source}](${b.url})`),
       '',
     ].join('\n'),

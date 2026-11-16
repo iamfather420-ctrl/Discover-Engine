@@ -28,6 +28,7 @@ export function DiscoverStage({ project }: { project: Project }) {
             <div className={s.row} style={{ marginBottom: '0.5rem' }}>
               <span className={s.chip}>{d.source === 'arxiv' ? 'arXiv' : 'OpenAlex'}</span>
               <span className={s.chip}>{d.lens}</span>
+              <span className={s.chip}>{d.sourceVerification === 'verified_metadata' ? 'metadata matched' : d.sourceVerification === 'metadata_mismatch' ? 'metadata mismatch' : 'source unverified'}</span>
               {d.year && <span className={s.muted}>{d.year}</span>}
               {d.citations > 0 && <span className={s.muted}>· {d.citations} cites</span>}
             </div>
@@ -35,11 +36,12 @@ export function DiscoverStage({ project }: { project: Project }) {
               <a className={s.link} href={d.url} target="_blank" rel="noreferrer">{d.title}</a>
             </h3>
             <div className={s.muted} style={{ marginBottom: '0.4rem' }}>{d.field}</div>
+            <p className={s.muted} style={{ margin: '0 0 0.4rem' }}>{d.sourceVerificationDetail || 'Metadata not cross-checked.'} Scientific claims in the abstract remain unverified.</p>
             <p className={`${s.muted} ${s.clamp3}`} style={{ margin: 0 }}>{d.abstract}</p>
             {d.metrics.length > 0 && (
               <div className={s.row} style={{ marginTop: '0.6rem' }}>
                 {d.metrics.slice(0, 2).map((m) => (
-                  <span key={m} className={`${s.chip} ${s.kind_device}`} title="Extracted benchmark">📊 {m.length > 60 ? `${m.slice(0, 60)}…` : m}</span>
+                  <span key={m} className={`${s.chip} ${s.kind_device}`} title="Unverified text extract — not independently checked">📄 Unverified extract: {m.length > 60 ? `${m.slice(0, 60)}…` : m}</span>
                 ))}
               </div>
             )}

@@ -7,7 +7,7 @@ const invention: Invention = {
   hypothesis: 'May affect target; magnitude unknown', targetMetric: 'performance',
   componentIds: ['a','b'], componentNames: ['A','B'], fields: ['Energy'],
   mechanism: ['Mechanism'], risks: ['Risk'], sourceIds: ['source-1'],
-  connectionType: 'unexplored', crossDomain: true, expectedGain: null,
+  connectionType: 'not_observed_in_sample', crossDomain: true, expectedGain: null,
   uncertainty: null, complexity: 2, maturity: null, custom: false, experiments: [],
 };
 const project: Project = {
