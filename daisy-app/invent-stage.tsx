@@ -54,7 +54,7 @@ export function InventStage({ project, onTest }: { project: Project; onTest: (in
             </div>
 
             <div className={s.row} style={{ marginTop: '1rem' }}>
-              <button className={s.primary} onClick={() => onTest(inv.id)}>Run experiment →</button>
+              <button className={s.primary} onClick={() => onTest(inv.id)}>View validation requirements →</button>
               <a className={s.ghost} href={api.specUrl(project.id, inv.id)} target="_blank" rel="noreferrer">View design spec</a>
             </div>
           </article>
