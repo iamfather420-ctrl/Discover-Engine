@@ -26,4 +26,5 @@ export type {
   Evaluation,
   EvaluationRow,
 } from './types.js';
-\nexport { createMeasurementRecord, validateMeasurementInput } from './measurement-evidence.js';\nexport type { MeasurementRecord, MeasurementInput, MeasurementStatus } from './measurement-evidence.js';\n
+export { createMeasurementRecord, validateMeasurementInput } from './measurement-evidence.js';
+export type { MeasurementRecord, MeasurementInput, MeasurementStatus } from './measurement-evidence.js';
