@@ -29,7 +29,7 @@ export function ConnectStage({ project }: { project: Project }) {
   return (
     <div className={s.stack}>
       <div className={s.card} style={{ padding: '0.75rem' }}>
-        <svg viewBox="0 0 760 460" className={s.network} role="img" aria-label="Technology connection network">
+        <svg viewBox="0 0 760 460" className={s.network} role="img" aria-label="Retrieved-sample association network">
           {project.connections.map((c) => {
             const a = pos.get(c.aId);
             const b = pos.get(c.bId);
@@ -49,24 +49,24 @@ export function ConnectStage({ project }: { project: Project }) {
           ))}
         </svg>
         <div className={s.row} style={{ marginTop: '0.6rem', padding: '0 0.4rem' }}>
-          <span className={`${s.chip} ${s.t_unexplored}`}>- - unexplored</span>
-          <span className={`${s.chip} ${s.t_emerging}`}>— emerging</span>
-          <span className={`${s.chip} ${s.t_established}`}>— established</span>
+          <span className={`${s.chip} ${s.t_unexplored}`}>- - not observed in sample</span>
+          <span className={`${s.chip} ${s.t_emerging}`}>— limited sample overlap</span>
+          <span className={`${s.chip} ${s.t_established}`}>— higher sample overlap</span>
         </div>
       </div>
 
       <div className={s.card}>
-        <h2 className={s.h2}>Ranked connections</h2>
+        <h2 className={s.h2}>Retrieved-sample associations</h2><p className={s.muted}>Scores and co-occurrence labels describe only this retrieved sample. They do not prove novelty, compatibility, or effectiveness.</p>
         <div className={s.tableWrap}>
           <table className={s.table}>
             <thead>
-              <tr><th>Combination</th><th>Type</th><th>Score</th><th>Why</th></tr>
+              <tr><th>Combination</th><th>Sample label</th><th>Heuristic score</th><th>Why</th></tr>
             </thead>
             <tbody>
               {project.connections.map((c) => (
                 <tr key={c.id}>
                   <td><b>{c.aName}</b> × <b>{c.bName}</b>{c.crossDomain && <div><span className={s.chip}>cross-domain</span></div>}</td>
-                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type}</span></td>
+                  <td><span className={`${s.chip} ${s[`t_${c.type}`]}`}>{c.type === 'unexplored' ? 'not observed in sample' : c.type === 'emerging' ? 'limited sample overlap' : 'higher sample overlap'}</span></td>
                   <td style={{ minWidth: 90 }}>
                     <div className={s.bar}><div className={s.barFill} style={{ width: `${c.score * 100}%` }} /></div>
                     <span className={s.muted}>{c.score.toFixed(2)}</span>
