@@ -12,6 +12,7 @@ export function UnderstandStage({ project, onInvented }: { project: Project; onI
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const kinds = ['algorithm', 'material', 'device', 'method', 'concept'];
+  const sourcesById = new Map(project.discoveries.map((source) => [source.id, source]));
 
   const toggle = (id: string) => setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : cur.length >= 4 ? cur : [...cur, id]));
 
@@ -61,6 +62,7 @@ export function UnderstandStage({ project, onInvented }: { project: Project; onI
               </div>
               <div className={s.muted}>Observed in {c.mentions} matched abstracts · {c.fields.slice(0, 2).join(', ')}</div>
               {c.context && <p className={`${s.muted} ${s.clamp3}`} style={{ margin: '0.5rem 0 0', fontStyle: 'italic' }}>“{c.context}”</p>}
+              {c.contextSourceId && sourcesById.get(c.contextSourceId) && <a className={s.link} href={sourcesById.get(c.contextSourceId)!.url} target="_blank" rel="noreferrer">Open exact source for quoted context</a>}
             </button>
           );
         })}
