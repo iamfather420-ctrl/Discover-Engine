@@ -12,6 +12,8 @@ const ProjectSchema = new Schema(
     error: String,
     log: [String],
     discoveries: { type: Schema.Types.Mixed, default: [] },
+    evidenceClaims: { type: Schema.Types.Mixed, default: [] },
+    evidenceMeasurements: { type: Schema.Types.Mixed, default: [] },
     components: { type: Schema.Types.Mixed, default: [] },
     connections: { type: Schema.Types.Mixed, default: [] },
     inventions: { type: Schema.Types.Mixed, default: [] },
