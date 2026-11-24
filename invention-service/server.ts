@@ -14,6 +14,12 @@ const wrap = (fn: Handler) => (req: Request, res: Response, _next: NextFunction)
   if (!res.headersSent) res.status(/not found/i.test(message)?404:400).json({message});
  });
 };
+function requireApiBearer(req: Request, res: Response, next: NextFunction) {
+ const expected = process.env.DISCOVERY_API_TOKEN ?? '';
+ if (expected.length < 32) return res.status(503).json({ error: 'discovery_auth_not_configured', publishable: false });
+ if (!bearerMatches(req.header('authorization'), expected)) return res.status(401).json({ error: 'discovery_authentication_required', publishable: false });
+ next();
+}
 export async function run() {
  const app=express();
  const useDb=await connectDb();
@@ -22,6 +28,8 @@ export async function run() {
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
  app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:useDb?'mongodb':'memory'}));
+ // All project APIs are authenticated. Missing credentials fail closed with 503.
+ app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
  app.post('/projects',wrap(async(req,res)=>{
   const input=normalizeProjectInput(req.body?.query,req.body?.domains);
@@ -32,7 +40,7 @@ export async function run() {
   if(!project) throw new Error('Project not found');
   res.json(project);
  }));
- app.delete('/projects/:id',wrap(async(req,res)=>{await engine.remove(String(req.params.id));res.status(204).end();}));
+ app.delete('/projects/:id',wrap(async(_req,res)=>{await engine.remove(String(_req.params.id));res.status(204).end();}));
  app.post('/projects/:id/evidence/measurements',wrap(async(req,res)=>{
   const record=await engine.ingestMeasurement(String(req.params.id),req.body);
   res.status(201).json(record);
@@ -61,11 +69,26 @@ export async function run() {
   if (!bearerMatches(req.header('authorization'), expected)) return res.status(401).json({ error: 'discovery_authentication_required', publishable: false });
   const discovery = req.body?.discovery;
   const claim = req.body?.claim;
-  if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
-    return res.status(400).json({ error: 'invalid_assertion', publishable: false });
-  }
   const requestId = /^[A-Za-z0-9._:-]{8,80}$/.test(req.header('x-request-id') ?? '') ? String(req.header('x-request-id')) : randomUUID();
   res.setHeader('x-request-id', requestId);
+  // Legacy Full-Build callers currently submit a free-text registry description.
+  // Accept the transport contract, but never represent free text as sourced evidence.
+  if (typeof claim === 'string' && claim.trim() && !discovery) {
+    return res.json({
+      service: 'iamfather420-ctrl/Discover-Engine',
+      publishable: false,
+      withheld: true,
+      reviewStatus: 'INSUFFICIENT_EVIDENCE',
+      statuses: ['WITHHELD', 'INSUFFICIENT_EVIDENCE'],
+      passageValid: false,
+      reason: 'Free-text assertion received. A canonical Discovery record and exact abstract-sentence EvidenceClaim locator are required for passage review; no evidence was inferred.',
+      evidenceGrade: 'none',
+      request_id: requestId,
+    });
+  }
+  if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
+    return res.status(400).json({ error: 'invalid_assertion', publishable: false, withheld: true, request_id: requestId });
+  }
   res.json({ ...reviewAssertion(discovery, claim), request_id: requestId });
  });
  const server=app.listen(port);
