@@ -69,11 +69,26 @@ export async function run() {
   if (!bearerMatches(req.header('authorization'), expected)) return res.status(401).json({ error: 'discovery_authentication_required', publishable: false });
   const discovery = req.body?.discovery;
   const claim = req.body?.claim;
-  if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
-    return res.status(400).json({ error: 'invalid_assertion', publishable: false });
-  }
   const requestId = /^[A-Za-z0-9._:-]{8,80}$/.test(req.header('x-request-id') ?? '') ? String(req.header('x-request-id')) : randomUUID();
   res.setHeader('x-request-id', requestId);
+  // Legacy Full-Build callers currently submit a free-text registry description.
+  // Accept the transport contract, but never represent free text as sourced evidence.
+  if (typeof claim === 'string' && claim.trim() && !discovery) {
+    return res.json({
+      service: 'iamfather420-ctrl/Discover-Engine',
+      publishable: false,
+      withheld: true,
+      reviewStatus: 'INSUFFICIENT_EVIDENCE',
+      statuses: ['WITHHELD', 'INSUFFICIENT_EVIDENCE'],
+      passageValid: false,
+      reason: 'Free-text assertion received. A canonical Discovery record and exact abstract-sentence EvidenceClaim locator are required for passage review; no evidence was inferred.',
+      evidenceGrade: 'none',
+      request_id: requestId,
+    });
+  }
+  if (!discovery || !claim || typeof claim.text !== 'string' || typeof discovery.abstract !== 'string') {
+    return res.status(400).json({ error: 'invalid_assertion', publishable: false, withheld: true, request_id: requestId });
+  }
   res.json({ ...reviewAssertion(discovery, claim), request_id: requestId });
  });
  const server=app.listen(port);
