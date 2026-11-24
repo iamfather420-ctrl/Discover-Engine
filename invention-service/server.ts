@@ -14,6 +14,12 @@ const wrap = (fn: Handler) => (req: Request, res: Response, _next: NextFunction)
   if (!res.headersSent) res.status(/not found/i.test(message)?404:400).json({message});
  });
 };
+function requireApiBearer(req: Request, res: Response, next: NextFunction) {
+ const expected = process.env.DISCOVERY_API_TOKEN ?? '';
+ if (expected.length < 32) return res.status(503).json({ error: 'discovery_auth_not_configured', publishable: false });
+ if (!bearerMatches(req.header('authorization'), expected)) return res.status(401).json({ error: 'discovery_authentication_required', publishable: false });
+ next();
+}
 export async function run() {
  const app=express();
  const useDb=await connectDb();
@@ -22,6 +28,8 @@ export async function run() {
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
  app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:useDb?'mongodb':'memory'}));
+ // All project APIs are authenticated. Missing credentials fail closed with 503.
+ app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
  app.post('/projects',wrap(async(req,res)=>{
   const input=normalizeProjectInput(req.body?.query,req.body?.domains);
@@ -32,7 +40,7 @@ export async function run() {
   if(!project) throw new Error('Project not found');
   res.json(project);
  }));
- app.delete('/projects/:id',wrap(async(req,res)=>{await engine.remove(String(req.params.id));res.status(204).end();}));
+ app.delete('/projects/:id',wrap(async(_req,res)=>{await engine.remove(String(_req.params.id));res.status(204).end();}));
  app.post('/projects/:id/evidence/measurements',wrap(async(req,res)=>{
   const record=await engine.ingestMeasurement(String(req.params.id),req.body);
   res.status(201).json(record);
