@@ -1,4 +1,4 @@
-import { Pool } from '@neondatabase/serverless';
+import { Pool } from 'pg';
 import type { Project } from './types.js';
 
 export const DISCOVERY_STAGING_NEON_HOST = 'ep-rough-unit-aysyjj75.c-5.us-east-2.aws.neon.tech';
@@ -50,10 +50,15 @@ export function validateDiscoveryDatabaseUrl(connectionString: string): string {
   if (!['postgres:', 'postgresql:'].includes(url.protocol)) {
     throw new Error('PERSISTENCE_CONFIG_INVALID: DATABASE_URL must use the PostgreSQL protocol.');
   }
-  if (url.hostname.toLowerCase() !== DISCOVERY_STAGING_NEON_HOST) {
+  const hostname = url.hostname.toLowerCase();
+  const localTestDatabase = process.env.NODE_ENV === 'test' &&
+    process.env.DISCOVERY_ALLOW_LOCAL_TEST_DATABASE === 'true' &&
+    (hostname === '127.0.0.1' || hostname === 'localhost');
+  if (localTestDatabase) return hostname;
+  if (hostname !== DISCOVERY_STAGING_NEON_HOST) {
     throw new Error('PERSISTENCE_TARGET_REJECTED: Discover-Engine is pinned to the existing Neon staging branch; the configured database host does not match.');
   }
-  return url.hostname.toLowerCase();
+  return hostname;
 }
 
 /**
