@@ -109,6 +109,16 @@ jobs:
             END IF;
           END
           $;
+          DO $
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'discovery_owner') THEN
+              CREATE ROLE discovery_owner LOGIN PASSWORD 'ci-discovery-owner-password' NOSUPERUSER NOBYPASSRLS;
+            ELSE
+              ALTER ROLE discovery_owner WITH LOGIN PASSWORD 'ci-discovery-owner-password' NOSUPERUSER NOBYPASSRLS;
+            END IF;
+          END
+          $;
+          ALTER TABLE public.daisy_projects OWNER TO discovery_owner;
           GRANT CONNECT ON DATABASE discovery_test TO discovery_app;
           GRANT USAGE ON SCHEMA public TO discovery_app;
           GRANT SELECT, INSERT, UPDATE, DELETE ON public.daisy_projects TO discovery_app;
@@ -117,6 +127,21 @@ jobs:
         run: npm test
       - name: Type-check service
         run: npm run typecheck
+      - name: Reject a table-owner runtime role
+        env:
+          DATABASE_URL: postgresql://discovery_owner:ci-discovery-owner-password@127.0.0.1:5432/discovery_test
+        shell: bash
+        run: |
+          set +e
+          npm start > /tmp/discover-owner-role.log 2>&1
+          status=$?
+          set -e
+          if [ "$status" -eq 0 ] || ! grep -q "PERSISTENCE_ROLE_TABLE_OWNER" /tmp/discover-owner-role.log; then
+            cat /tmp/discover-owner-role.log
+            echo "Expected service startup to reject the table-owner runtime role."
+            exit 1
+          fi
+          echo "TABLE-OWNER ROLE REJECTED"
       - name: Run live seven-stage invention pipeline
         shell: bash
         run: |
