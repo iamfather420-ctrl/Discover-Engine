@@ -89,6 +89,12 @@ export async function connectDb(): Promise<{ pool: PgPoolLike; tenantId: string 
         'WHERE n.nspname = \'public\' AND c.relname = \'daisy_projects\''
       );
       const row = schema.rows[0];
+      const role = await client.query<{ rolbypassrls: boolean; rolsuper: boolean }>(
+        'SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user'
+      );
+      if (role.rows.length !== 1 || role.rows[0].rolbypassrls || role.rows[0].rolsuper) {
+        throw new Error('PERSISTENCE_ROLE_NOT_RESTRICTED: runtime role must not be superuser or BYPASSRLS.');
+      }
       const columns = await client.query<{ column_name: string }>(
         'SELECT column_name FROM information_schema.columns ' +
         'WHERE table_schema = \'public\' AND table_name = \'daisy_projects\''
@@ -140,6 +146,17 @@ export class ProjectRepository {
     } finally {
       client.release();
     }
+  }
+
+  async healthCheck(): Promise<void> {
+    await this.withTenant(async client => {
+      const result = await client.query<{ tenant_id: string; connected: number }>(
+        "SELECT current_setting('app.tenant_id', true) AS tenant_id, 1 AS connected"
+      );
+      if (result.rows[0]?.tenant_id !== this.tenantId || Number(result.rows[0]?.connected) !== 1) {
+        throw new Error('PERSISTENCE_READINESS_CHECK_FAILED: tenant-scoped database query did not verify.');
+      }
+    });
   }
 
   async list(): Promise<Pick<Project, 'id' | 'query' | 'domains' | 'status' | 'stage' | 'createdAt'>[]> {
