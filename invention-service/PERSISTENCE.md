@@ -20,6 +20,7 @@ Configure these values on the Discover-Engine Render service before merging/depl
 - `DATABASE_URL`: connection string for the existing staging branch above. Do not use the production branch.
 - `DISCOVERY_TENANT_ID`: stable server-owned tenant identifier for this service. It must not come from request bodies or query parameters.
 - `DISCOVERY_API_TOKEN`: existing service-to-service bearer secret (at least 32 characters).
+- The PostgreSQL role in `DATABASE_URL` must be a restricted runtime role: not a superuser, not `BYPASSRLS`, and not the table owner. Grant only the required SELECT/INSERT/UPDATE/DELETE privileges.
 
 Do not put connection strings or tokens in source control, PR comments, logs, or client responses.
 
@@ -31,7 +32,9 @@ The service never runs migrations automatically. CI applies the same SQL to its 
 
 to the existing staging branch only. The migration creates typed columns for project identity, lifecycle, arrays, evidence claims/measurements, discoveries, components, connections, and inventions. It enables and forces row-level security with a transaction-local tenant policy.
 
-At startup, `connectDb()` verifies the expected host, required table columns, forced RLS, and the tenant isolation policy. If any requirement is missing, startup fails closed. No in-memory fallback exists.
+At startup, `connectDb()` verifies the expected host, required table columns, forced RLS, the tenant isolation policy, and that the current database role is neither superuser nor `BYPASSRLS`. If any requirement is missing, startup fails closed. No in-memory fallback exists.
+
+The service exposes `/healthz` for process liveness and `/readyz` for a real tenant-scoped database query. Configure Render's health-check path to `/readyz` only after the migration and restricted role are in place.
 
 ## Transaction isolation
 
