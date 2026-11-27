@@ -21,11 +21,31 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: discovery_test
+          POSTGRES_USER: discovery
+          POSTGRES_PASSWORD: ci-discovery-password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U discovery -d discovery_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://discovery:ci-discovery-password@127.0.0.1:5432/discovery_test
+      DISCOVERY_TENANT_ID: ci-tenant
+      DISCOVERY_API_TOKEN: ci-discovery-token-for-local-pipeline-validation-2026
+      DISCOVERY_ALLOW_LOCAL_TEST_DATABASE: 'true'
+      NODE_ENV: test
     defaults:
       run:
         working-directory: invention-service
@@ -71,10 +91,15 @@ jobs:
           name: discover-engine-dependency-audit
           path: /tmp/npm-audit.json
           if-no-files-found: warn
+      - name: Apply tenant-isolated schema to disposable CI PostgreSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_create_daisy_projects.sql
       - name: Run unit and regression tests
         run: npm test
       - name: Type-check service
-        run: npx tsc --noEmit
+        run: npm run typecheck
       - name: Run live seven-stage invention pipeline
         shell: bash
         run: |
@@ -195,30 +220,3 @@ jobs:
       - name: Build all Bit components
         run: bit build
 
-  commit-lockfiles:
-    runs-on: ubuntu-latest
-    needs: [test, frontend, bit-workspace]
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Download service lockfile
-        uses: actions/download-artifact@v4
-        with:
-          name: discover-engine-service-lockfile
-          path: invention-service
-      - name: Download frontend lockfile
-        uses: actions/download-artifact@v4
-        with:
-          name: discover-engine-frontend-lockfile
-          path: daisy-app
-      - name: Commit generated lockfiles
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add invention-service/package-lock.json daisy-app/package-lock.json
-          if git diff --cached --quiet; then
-            echo "Lockfiles already current; no commit needed."
-          else
-            git commit -m "chore: commit reproducible dependency lockfiles"
-            git push
-          fi
