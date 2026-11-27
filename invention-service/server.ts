@@ -22,12 +22,12 @@ function requireApiBearer(req: Request, res: Response, next: NextFunction) {
 }
 export async function run() {
  const app=express();
- const useDb=await connectDb();
- console.log(`[invention-service] storage: ${useDb?'MongoDB':'in-memory (MONGO_URL not set)'}`);
- const engine=InventionService.from(new ProjectRepository(useDb));
+ const {pool,tenantId}=await connectDb();
+ console.log('[invention-service] storage: Neon PostgreSQL with forced tenant RLS');
+ const engine=InventionService.from(new ProjectRepository(pool,tenantId));
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
- app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:useDb?'mongodb':'memory'}));
+ app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:'neon-postgresql',persistence:'required',tenant_isolation:'forced_rls'}));
  // All project APIs are authenticated. Missing credentials fail closed with 503.
  app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
@@ -98,5 +98,5 @@ export async function run() {
  });
  const bound=(server.address() as AddressInfo).port;
  console.log(`[invention-service] ready port=${bound}`);
- return {port: bound, stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}};
+ return {port: bound, stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));await pool.end();}};
 }
