@@ -75,6 +75,19 @@ describe('Discover-Engine Neon persistence boundary', () => {
     expect(client.release).toHaveBeenCalledOnce();
   });
 
+  it('performs a real tenant-scoped readiness query inside a transaction', async () => {
+    const { pool, queries } = makePool([{ tenant_id: 'tenant-alpha', connected: 1 }]);
+    const repository = new ProjectRepository(pool, 'tenant-alpha');
+    await repository.healthCheck();
+    expect(queries.map(item => item.text)).toEqual([
+      'BEGIN',
+      "SELECT set_config('app.tenant_id', $1, true)",
+      expect.stringContaining("current_setting('app.tenant_id', true)"),
+      'COMMIT',
+    ]);
+    expect(queries[1].values).toEqual(['tenant-alpha']);
+  });
+
   it('writes all project domains through tenant-scoped, parameterized upsert', async () => {
     const { pool, queries } = makePool();
     const repository = new ProjectRepository(pool, 'tenant-alpha');
