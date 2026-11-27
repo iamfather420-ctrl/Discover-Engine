@@ -49,6 +49,12 @@ describe('Discover-Engine Neon persistence boundary', () => {
       .toThrow(/PERSISTENCE_TARGET_REJECTED/);
     expect(() => validateDiscoveryDatabaseUrl('mongodb://localhost/discovery'))
       .toThrow(/PERSISTENCE_CONFIG_INVALID/);
+    vi.stubEnv('NODE_ENV', 'test');
+    vi.stubEnv('DISCOVERY_ALLOW_LOCAL_TEST_DATABASE', 'true');
+    expect(validateDiscoveryDatabaseUrl('postgresql://ci:ci@127.0.0.1:5432/discovery_test')).toBe('127.0.0.1');
+    vi.unstubAllEnvs();
+    expect(() => validateDiscoveryDatabaseUrl('postgresql://ci:ci@127.0.0.1:5432/discovery_test'))
+      .toThrow(/PERSISTENCE_TARGET_REJECTED/);
   });
 
   it('sets a transaction-local tenant before every read and filters by that tenant', async () => {
