@@ -4,14 +4,14 @@
 
 The deployed Render service is on the free plan and has no configured persistent disk. Its previous MongoDB adapter silently fell back to a process-local `Map` when `MONGO_URL` was absent. That fallback is removed in this branch.
 
-The replacement uses the existing Neon PostgreSQL staging branch only:
+The replacement uses standard PostgreSQL transactions through the `pg` driver and pins production-like configuration to the existing Neon staging branch only. The same repository code is exercised against a disposable local PostgreSQL service in CI:
 
 - Neon project: `soft-grass-12820689`
 - Staging branch: `br-late-fire-ayq1hxa0`
 - Expected host: `ep-rough-unit-aysyjj75.c-5.us-east-2.aws.neon.tech`
 - Database: `neondb`
 
-The code rejects any other database host. It does not create a Neon project, branch, compute, or paid resource.
+The code rejects any other database host in Render. A localhost/127.0.0.1 exception is allowed only when both `NODE_ENV=test` and `DISCOVERY_ALLOW_LOCAL_TEST_DATABASE=true` are set; the GitHub Actions workflow uses a disposable PostgreSQL container. It does not create a Neon project, branch, compute, or paid resource.
 
 ## Required Render environment
 
@@ -25,7 +25,7 @@ Do not put connection strings or tokens in source control, PR comments, logs, or
 
 ## Manual schema step
 
-The service never runs migrations automatically. Review and apply:
+The service never runs migrations automatically. CI applies the same SQL to its disposable PostgreSQL container before running the end-to-end pipeline test. Review and apply:
 
 `migrations/001_create_daisy_projects.sql`
 
