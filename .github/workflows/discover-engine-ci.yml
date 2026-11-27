@@ -41,7 +41,8 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
-      DATABASE_URL: postgresql://discovery:ci-discovery-password@127.0.0.1:5432/discovery_test
+      DATABASE_URL: postgresql://discovery_app:ci-discovery-app-password@127.0.0.1:5432/discovery_test
+      DISCOVERY_ADMIN_DATABASE_URL: postgresql://discovery:ci-discovery-password@127.0.0.1:5432/discovery_test
       DISCOVERY_TENANT_ID: ci-tenant
       DISCOVERY_API_TOKEN: ci-discovery-token-for-local-pipeline-validation-2026
       DISCOVERY_ALLOW_LOCAL_TEST_DATABASE: 'true'
@@ -95,7 +96,23 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
-          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_create_daisy_projects.sql
+          psql "$DISCOVERY_ADMIN_DATABASE_URL" -v ON_ERROR_STOP=1 -f migrations/001_create_daisy_projects.sql
+      - name: Create restricted runtime role for RLS verification
+        run: |
+          psql "$DISCOVERY_ADMIN_DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          DO $
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'discovery_app') THEN
+              CREATE ROLE discovery_app LOGIN PASSWORD 'ci-discovery-app-password' NOSUPERUSER NOBYPASSRLS;
+            ELSE
+              ALTER ROLE discovery_app WITH LOGIN PASSWORD 'ci-discovery-app-password' NOSUPERUSER NOBYPASSRLS;
+            END IF;
+          END
+          $;
+          GRANT CONNECT ON DATABASE discovery_test TO discovery_app;
+          GRANT USAGE ON SCHEMA public TO discovery_app;
+          GRANT SELECT, INSERT, UPDATE, DELETE ON public.daisy_projects TO discovery_app;
+          SQL
       - name: Run unit and regression tests
         run: npm test
       - name: Type-check service
@@ -122,6 +139,8 @@ jobs:
             sleep 2
           done
           jq -e '.status == "ok"' /tmp/health.json
+          curl --fail --silent --show-error http://127.0.0.1:$PORT/healthz | jq -e '.status == "alive"'
+          curl --fail --silent --show-error http://127.0.0.1:$PORT/readyz | jq -e '.status == "ready" and .durable == true and .tenant_isolation == "forced_rls"'
 
           curl --fail --silent --show-error \
             -H "Authorization: Bearer $DISCOVERY_API_TOKEN" \
@@ -220,31 +239,3 @@ jobs:
       - name: Build all Bit components
         run: bit build
 
-  sync-service-lockfile:
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'fix/neon-tenant-persistence-20261126'
-    needs: [test, frontend, bit-workspace]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Generate reproducible service lockfile
-        working-directory: invention-service
-        run: npm install --package-lock-only --no-audit --no-fund
-      - name: Commit generated lockfile only to this PR branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add invention-service/package-lock.json
-          if git diff --cached --quiet; then
-            echo "Service lockfile already current."
-            exit 0
-          fi
-          git commit -m "chore: sync discovery service package lockfile"
-          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
