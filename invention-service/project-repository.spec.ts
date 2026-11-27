@@ -89,7 +89,7 @@ describe('Neon-backed ProjectRepository', () => {
     await repository.healthCheck();
     await repository.remove('project-1');
     expect(await repository.get('project-1')).toBeNull();
-    expect(fake.calls.filter(call => call.sql === 'BEGIN').length).toBe(5);
+    expect(fake.calls.filter(call => call.sql === 'BEGIN').length).toBe(6);
     expect(fake.calls.every(call => !/CREATE TABLE|ALTER TABLE|CREATE POLICY/i.test(call.sql))).toBe(true);
     expect(fake.calls.some(call => call.sql.includes("set_config('app.tenant_id'") && call.values[0] === 'tenant-a')).toBe(true);
   });
