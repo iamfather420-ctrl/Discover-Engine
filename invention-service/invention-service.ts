@@ -82,5 +82,5 @@ export class InventionService {
   return {name:`daisy-${project.query.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40)}.zip`,data};
  }
  private async require(id:string):Promise<Project>{const project=await this.repo.get(id);if(!project)throw new Error('Project not found');return project;}
- static from(repo:ProjectRepository=new ProjectRepository(false)){return new InventionService(repo);}
+ static from(repo:ProjectRepository){return new InventionService(repo);}
 }
