@@ -140,7 +140,7 @@ jobs:
             STATUS=$(jq -r '.status' /tmp/project.json)
             echo "Pipeline status ($attempt): $STATUS"
             if [ "$STATUS" = "ready" ]; then READY=1; break; fi
-            if [ "$STATUS" = "failed" ]; then
+            if [ "$STATUS" = "error" ]; then
               cat /tmp/project.json
               cat /tmp/discover-engine.log
               exit 1
