@@ -82,6 +82,7 @@ export async function connectDb(): Promise<{ pool: PgPoolLike; tenantId: string 
     try {
       const schema = await client.query<Record<string, any>>(
         'SELECT c.relrowsecurity AS rls_enabled, c.relforcerowsecurity AS rls_forced, ' +
+        'pg_get_userbyid(c.relowner) AS table_owner, ' +
         'p.qual AS policy_using, p.with_check AS policy_check ' +
         'FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace ' +
         'LEFT JOIN pg_policies p ON p.schemaname = n.nspname AND p.tablename = c.relname ' +
@@ -89,11 +90,14 @@ export async function connectDb(): Promise<{ pool: PgPoolLike; tenantId: string 
         'WHERE n.nspname = \'public\' AND c.relname = \'daisy_projects\''
       );
       const row = schema.rows[0];
-      const role = await client.query<{ rolbypassrls: boolean; rolsuper: boolean }>(
-        'SELECT rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user'
+      const role = await client.query<{ rolname: string; rolbypassrls: boolean; rolsuper: boolean }>(
+        'SELECT rolname, rolbypassrls, rolsuper FROM pg_roles WHERE rolname = current_user'
       );
       if (role.rows.length !== 1 || role.rows[0].rolbypassrls || role.rows[0].rolsuper) {
         throw new Error('PERSISTENCE_ROLE_NOT_RESTRICTED: runtime role must not be superuser or BYPASSRLS.');
+      }
+      if (String(row?.table_owner ?? '') === role.rows[0].rolname) {
+        throw new Error('PERSISTENCE_ROLE_TABLE_OWNER: runtime role must not own the discovery project table.');
       }
       const columns = await client.query<{ column_name: string }>(
         'SELECT column_name FROM information_schema.columns ' +
