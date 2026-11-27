@@ -23,11 +23,11 @@ function requireApiBearer(req: Request, res: Response, next: NextFunction) {
 export async function run() {
  const app=express();
  const {pool,tenantId}=await connectDb();
- console.log('[invention-service] storage: Neon PostgreSQL with forced tenant RLS');
+ console.log('[invention-service] storage: PostgreSQL with forced tenant RLS');
  const engine=InventionService.from(new ProjectRepository(pool,tenantId));
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
- app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:'neon-postgresql',persistence:'required',tenant_isolation:'forced_rls'}));
+ app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:'postgresql',persistence:'required',tenant_isolation:'forced_rls'}));
  // All project APIs are authenticated. Missing credentials fail closed with 503.
  app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
