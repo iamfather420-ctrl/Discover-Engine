@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import { InventionService } from './invention-service.js';
-import { ProjectRepository, connectDb } from './project-repository.js';
+import { connectDb } from './project-repository.js';
 import { randomUUID } from 'node:crypto';
 import { reviewAssertion, bearerMatches } from './assertion-api.js';
 import { normalizeProjectInput } from './validation.js';
@@ -22,12 +22,23 @@ function requireApiBearer(req: Request, res: Response, next: NextFunction) {
 }
 export async function run() {
  const app=express();
- const useDb=await connectDb();
- console.log(`[invention-service] storage: ${useDb?'MongoDB':'in-memory (MONGO_URL not set)'}`);
- const engine=InventionService.from(new ProjectRepository(useDb));
+ const repository=await connectDb();
+ await repository.healthCheck();
+ console.log('[invention-service] storage: Neon PostgreSQL (durable, tenant-scoped)');
+ const engine=InventionService.from(repository);
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
- app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:useDb?'mongodb':'memory'}));
+ app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:'neon-postgres'}));
+ app.get('/healthz',(_req,res)=>res.json({status:'alive'}));
+ app.get('/readyz',async(_req,res)=>{
+  try {
+   await repository.healthCheck();
+   res.json({status:'ready',storage:'neon-postgres',durable:true});
+  } catch (error) {
+   console.error('[invention-service] readiness database probe failed:',error instanceof Error?error.message:'unknown');
+   res.status(503).json({status:'not_ready',storage:'neon-postgres',publishable:false});
+  }
+ });
  // All project APIs are authenticated. Missing credentials fail closed with 503.
  app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
@@ -98,5 +109,5 @@ export async function run() {
  });
  const bound=(server.address() as AddressInfo).port;
  console.log(`[invention-service] ready port=${bound}`);
- return {port: bound, stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));}};
+ return {port: bound, stop:async()=>{server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(error=>error?reject(error):resolve()));await repository.close();}};
 }
