@@ -52,7 +52,7 @@ describe('Discover-Engine Neon persistence boundary', () => {
     vi.stubEnv('NODE_ENV', 'test');
     vi.stubEnv('DISCOVERY_ALLOW_LOCAL_TEST_DATABASE', 'true');
     expect(validateDiscoveryDatabaseUrl('postgresql://ci:ci@127.0.0.1:5432/discovery_test')).toBe('127.0.0.1');
-    vi.unstubAllEnvs();
+    vi.stubEnv('DISCOVERY_ALLOW_LOCAL_TEST_DATABASE', 'false');
     expect(() => validateDiscoveryDatabaseUrl('postgresql://ci:ci@127.0.0.1:5432/discovery_test'))
       .toThrow(/PERSISTENCE_TARGET_REJECTED/);
   });
