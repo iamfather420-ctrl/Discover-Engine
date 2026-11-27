@@ -23,11 +23,23 @@ function requireApiBearer(req: Request, res: Response, next: NextFunction) {
 export async function run() {
  const app=express();
  const {pool,tenantId}=await connectDb();
- console.log('[invention-service] storage: PostgreSQL with forced tenant RLS');
- const engine=InventionService.from(new ProjectRepository(pool,tenantId));
+ const repository=new ProjectRepository(pool,tenantId);
+ await repository.healthCheck();
+ console.log('[invention-service] storage: PostgreSQL with forced tenant RLS and restricted role');
+ const engine=InventionService.from(repository);
  const port=process.env.PORT||4000;
  app.use(express.json({limit:'1mb'}));
  app.get('/',(_req,res)=>res.json({name:'daisy-invention-engine',status:'ok',storage:'postgresql',persistence:'required',tenant_isolation:'forced_rls'}));
+ app.get('/healthz',(_req,res)=>res.json({status:'alive'}));
+ app.get('/readyz',async(_req,res)=>{
+  try {
+   await repository.healthCheck();
+   res.json({status:'ready',storage:'postgresql',durable:true,tenant_isolation:'forced_rls'});
+  } catch (error) {
+   console.error('[invention-service] readiness probe failed:',error instanceof Error?error.message:'unknown');
+   res.status(503).json({status:'not_ready',publishable:false});
+  }
+ });
  // All project APIs are authenticated. Missing credentials fail closed with 503.
  app.use('/projects', requireApiBearer);
  app.get('/projects',wrap(async(_req,res)=>res.json(await engine.list())));
