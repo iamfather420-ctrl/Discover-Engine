@@ -220,3 +220,31 @@ jobs:
       - name: Build all Bit components
         run: bit build
 
+  sync-service-lockfile:
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.event.pull_request.head.ref == 'fix/neon-tenant-persistence-20261126'
+    needs: [test, frontend, bit-workspace]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Generate reproducible service lockfile
+        working-directory: invention-service
+        run: npm install --package-lock-only --no-audit --no-fund
+      - name: Commit generated lockfile only to this PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add invention-service/package-lock.json
+          if git diff --cached --quiet; then
+            echo "Service lockfile already current."
+            exit 0
+          fi
+          git commit -m "chore: sync discovery service package lockfile"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
